@@ -1,0 +1,8 @@
+//
+// Created by skywa on 2024/5/26.
+//
+
+#ifndef TICKET_SYSTEM_2024_ORDER_HPP
+#define TICKET_SYSTEM_2024_ORDER_HPP
+
+#endif //TICKET_SYSTEM_2024_ORDER_HPP
