@@ -105,8 +105,12 @@ public:
     }
     void print(){
         std::pair<int, int> ret;
-        ret = Date(); std::cout << ret.first << '-' << ret.second << ' ';
-        ret = Time(); std::cout<< ret.first << ':' << ret.second << '\n';
+        ret = Date();
+        if (ret.first < 10) std::cout << '0'; std::cout << ret.first << '-';
+        if (ret.second < 10) std::cout << '0'; std::cout << ret.second << ' ';
+        ret = Time();
+        if (ret.first < 10) std::cout << '0'; std::cout << ret.first << ':';
+        if (ret.second < 10) std::cout << '0'; std::cout << ret.second << '\n';
     }
 };
 

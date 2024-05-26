@@ -65,7 +65,6 @@ int main(){
 
                 } else if (user_system.logged_in(cur_user_info, type_userid(arguments['c' - 'a']))){
 
-
                 }
                 output_ReturnMode(ret_mode);
                 break;
