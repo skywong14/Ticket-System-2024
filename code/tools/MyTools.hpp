@@ -114,7 +114,7 @@ public:
     }
 };
 
-void output_ReturnMode(ReturnMode ret, string extra_info = "");
+void output_ReturnMode(ReturnMode ret, int timestamp = -1, string extra_info = "");
 
 Command_Name get_Command_Name(const string& str);
 

@@ -29,9 +29,9 @@ struct WaitingOrder{
 
 class Order_System{
 private:
-    BPTree< > order_data;  //key: oderId          value: Order(struct)
-    BPTree< > user_order;  //key: userId          value: orderId
-    BPTree< > order_queue; //key: userId + trainId  value: WaitingOrder
+//    BPTree< > order_data;  //key: oderId          value: Order(struct)
+//    BPTree< > user_order;  //key: userId          value: orderId
+//    BPTree< > order_queue; //key: userId + trainId  value: WaitingOrder
 public:
 
 };

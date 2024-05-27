@@ -38,9 +38,9 @@ struct ReleasedTrain{
 
 class Train_System{
 private:
-    BPTree< > train_data; // key: trainId value: trainInfo
-    BPTree< > releasedTrain_data; // key: day + trainId value: ReleasedTrain
-    BPTree< > station_data; // key: stationName + trainId    value:station
+//    BPTree< > train_data; // key: trainId value: trainInfo
+//    BPTree< > releasedTrain_data; // key: day + trainId value: ReleasedTrain
+//    BPTree< > station_data; // key: stationName + trainId    value:station
 public:
 
 

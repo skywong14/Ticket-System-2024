@@ -28,19 +28,23 @@ public:
     bool logged_in(User_info &ret, type_userid userid_);
 
     //登录
-    bool login(const string& userid_, const string& password_);
+    bool login(type_userid userid_, User_info info_);
+
+    void update_user_logged_in(type_userid userid_, User_info new_info_);
 
     //登出
-    bool logout(const string& userid_);
+    bool logout(type_userid userid_);
 
     //在数据库中查找
-    bool get_User_info(User_info &ret, const string& userid_);
+    bool User_exist(type_userid userid_);
 
-    bool delete_User(const string& userid_);
+    bool get_User_info(User_info &ret, type_userid userid_); //return false is not exist
+
+    bool delete_User(type_userid userid_);
 
     bool add_User(type_userid userid_, User_info info_);
 
-    bool modify_User(const string& userid_, User_info new_info_);
+    bool modify_User(type_userid userid_, User_info pre_info_, User_info new_info_);
 
     bool empty();
 };

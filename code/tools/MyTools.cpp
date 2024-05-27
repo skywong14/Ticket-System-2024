@@ -22,7 +22,8 @@ Command_Name get_Command_Name(const string& str){
     else return Command_Name::unknown;
 }
 
-void output_ReturnMode(ReturnMode ret, string extra_info){
+void output_ReturnMode(ReturnMode ret, int timestamp, string extra_info){
+    std::cout<<'['<<timestamp<<"] ";
     if (ret == ReturnMode::Correct) std::cout<<"Correct!"<<std::endl;
     if (ret != ReturnMode::Correct) std::cout<<"Invalid:";
     if (1){
@@ -43,8 +44,8 @@ ReturnMode get_arguments(std::string (&arguments)[26], const vector<string>& cur
         arguments[i].clear();
     if (cur_tokens.size() % 2 != 0) return ReturnMode::Invalid_Format;
     for (int i = 2; i < cur_tokens.size(); i += 2){
-        if (cur_tokens[i][0] != '-' || cur_tokens[i].size() != 2) return ReturnMode::Invalid_Format;
-        if (cur_tokens[i][1] - 'a' < 0 || cur_tokens[i][1] >= 26) return ReturnMode::Invalid_Format;
+        if (cur_tokens[i][0] != '-' ||cur_tokens[i].size() != 2) return ReturnMode::Invalid_Format;
+        if (cur_tokens[i][1] - 'a' < 0 || cur_tokens[i][1] - 'a' >= 26) return ReturnMode::Invalid_Format;
         arguments[cur_tokens[i][1] - 'a'] = cur_tokens[i+1];
     }
     return ReturnMode::Correct;

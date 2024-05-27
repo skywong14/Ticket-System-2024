@@ -7,19 +7,19 @@ bool User_system::logged_in(User_info &ret, type_userid userid) {
     return false;
 }
 
-bool User_system::get_User_info(User_info &ret, const string &userid_) {
+bool User_system::get_User_info(User_info &ret, type_userid userid_) {
     return false;
 }
 
-bool User_system::login(const string &userid_, const string &password_) {
+bool User_system::login(type_userid userid_, User_info info_) {
     return false;
 }
 
-bool User_system::logout(const string &userid_) {
+bool User_system::logout(type_userid userid_) {
     return false;
 }
 
-bool User_system::delete_User(const string &userid_) {
+bool User_system::delete_User(type_userid userid_) {
     return false;
 }
 
@@ -28,7 +28,7 @@ bool User_system::add_User(type_userid userid_, User_info info_) {
     return false;
 }
 
-bool User_system::modify_User(const string &userid_, User_info new_info_) {
+bool User_system::modify_User(type_userid userid_, User_info pre_info_, User_info new_info_) {
     return false;
 }
 
@@ -44,4 +44,16 @@ User_system::~User_system() {
 bool User_system::empty() {
     return user_data.empty();
 }
+
+bool User_system::User_exist(type_userid userid_) {
+    return false;
+}
+
+void User_system::update_user_logged_in(type_userid userid_, User_info new_info_) {
+
+}
+
+
+
+
 

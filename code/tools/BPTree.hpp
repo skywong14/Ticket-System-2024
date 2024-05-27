@@ -263,29 +263,6 @@ private:
         } else
             return 0;
     }
-
-public:
-
-    //buffer:
-    void pop_all_buffer(){
-        refresh_basic_info();
-        for (int i = 0; i < buffer.node_size; i++){
-            write_Node_disk(buffer.node_id[i], buffer.nodes[i]);
-        }
-        for (int i = 0; i < buffer.value_size; i++){
-            write_Node_Value_disk(buffer.value_id[i], buffer.values[i]);
-        }
-        buffer.time_tag = 1;
-        buffer.node_size = buffer.value_size = buffer.info_flag = 0;
-    }
-
-    long long get_Hash(const string& str1){
-        long long ha = 0;
-        for (int i = 0; i < str1.length(); i++)
-            ha = (ha * BASE + (long long)(str1[i]) ) % MOD;
-        return ha;
-    }
-
     void initialise_file(){
         int tmp = 0;
         file.open(index_filename, std::ios::out | std::ios::binary);
@@ -296,29 +273,6 @@ public:
         file_value.write(reinterpret_cast<char *>(&tmp), sizeofint);
         file_value.close();
     }
-    int initialise(string FN = "", int clear_file = 0){
-        if (!FN.empty()) filename = FN;
-        index_filename = filename + "_index.bpt";
-        value_filename = filename + "_value.bpt";
-
-        if (check_file_exists(index_filename) && check_file_exists(value_filename) && (!clear_file)) return 0; //文件已经存在就无需初始化
-
-        initialise_file();
-        file.open(index_filename, std::ios::in | std::ios::out | std::ios::binary);
-        assert(file.is_open());
-        file.close();
-        Basic_Information info1;
-        info1.root_node_id = 0; //0 means nullptr
-        for (int i = 1; i <= Max_Nodes; i++)
-            info1.empty_node_id[i-1] = i;
-        write_Basic_Information_disk(info1);
-
-        file_value.open(value_filename, std::ios::in | std::ios::out | std::ios::binary);
-        assert(file_value.is_open());
-        file_value.close();
-        return 1;
-    }
-
     int allocate_node(){
         //使用后记得更新basic_info到文件，返回申请得到的node's id
         //如果返回0，说明出错
@@ -408,181 +362,6 @@ public:
         cur_node.size++;
 
         update_Node_and_Values(cur_node.id, cur_node, cur_values);
-    }
-
-    int insert(const string& str1, T value_){
-        //return 0 is key&value is same
-        long long index_hash = get_Hash(str1);
-
-        basic_info = read_Basic_Information();
-
-        if (basic_info.root_node_id == 0){ //BPTree is empty
-            basic_info.root_node_id = allocate_node();
-            Node new_node;
-            Node_Value new_node_value;
-            new_node.id = basic_info.root_node_id;
-            new_node.size = 1;
-            new_node.is_leaf = 1;
-            new_node.index[0] = index_hash;
-            new_node.sons[0] = 0;
-            new_node_value.values[0] = value_;
-            update_Node_and_Values(new_node.id, new_node, new_node_value);
-        } else {
-            std::pair<vector<int>, Node> ret_ = find_Node(index_hash, value_);
-            if (ret_.first.back() == -1) return 0;
-            Node cur_node = ret_.second;
-            vector<int> trace = ret_.first;
-            int trace_cnt = int(trace.size()) - 1;
-            //then insert in cur_node and not the head of cur_node is guaranteed
-            //we need to insert index_hash&inserted_value to cur_node
-            long long inserted_index = index_hash;
-            int inserted_ptr = 0;
-            T inserted_value = value_;
-
-            while (true){
-                if (cur_node.size < M){
-                    insert_node(cur_node, inserted_index, inserted_value, inserted_ptr);
-                    break;
-                } else {
-                    //split
-                    //insert on node then split the node
-                    //cur_node.size = M (attention: but has M + 1 sons)
-                    int exist_nxt_node = cur_node.nxt_node;
-                    Node new_node, nxt_node;
-                    Node_Value new_values, cur_values = read_Node_Value(cur_node.id);
-
-                    //insert first
-                    int pos = cur_node.size;
-                    for (int i = 0; i < cur_node.size; i++)
-                        if (cur_node.index[i] > inserted_index || cur_node.index[i] == inserted_index && cur_values.values[i] >inserted_value){
-                            pos = i;
-                            break;
-                        }
-                    for (int i = cur_node.size; i > pos; i--){
-                        cur_node.index[i] = cur_node.index[i - 1];
-                        cur_node.sons[i + 1] =cur_node.sons[i - 1 + 1];
-                        cur_values.values[i] = cur_values.values[i - 1];
-                    }
-                    cur_node.index[pos] = inserted_index;
-                    cur_node.sons[pos + 1] = inserted_ptr;
-                    cur_values.values[pos] = inserted_value;
-                    cur_node.size++;
-
-                    //then split, now cur_node.size = M + 1
-                    new_node.id = allocate_node();
-                    if (cur_node.is_leaf){
-                        cur_node.size = (M + 1) / 2;
-                        new_node.size = M + 1 - (M + 1) / 2;
-                        for (int i = 0; i < new_node.size; i++){
-                            new_node.index[i] = cur_node.index[i + (M + 1) / 2];
-                            new_node.sons[i] = cur_node.sons[i + (M + 1) / 2 + 1];
-                            new_values.values[i] = cur_values.values[i + (M + 1) / 2];
-                        }
-                        if (exist_nxt_node){
-                            nxt_node = read_Node(cur_node.nxt_node);
-                            nxt_node.pre_node = new_node.id;
-                        }
-                        new_node.is_leaf = cur_node.is_leaf;
-                        new_node.nxt_node = cur_node.nxt_node; new_node.pre_node = cur_node.id;
-                        cur_node.nxt_node = new_node.id;
-
-                        inserted_index = new_node.index[0];
-                        inserted_value = new_values.values[0];
-                        inserted_ptr = new_node.id;
-                    } else {
-                        new_node.size = M - M / 2;
-                        for (int i = 0; i < new_node.size; i++){
-                            new_node.index[i] = cur_node.index[i + M / 2 + 1];
-                            new_node.sons[i] = cur_node.sons[i + M / 2 + 1];
-                            new_values.values[i] = cur_values.values[i + M / 2 + 1];
-                        }
-                        new_node.sons[new_node.size] = cur_node.sons[cur_node.size];
-                        cur_node.size = M / 2;
-
-                        if (exist_nxt_node){
-                            nxt_node = read_Node(cur_node.nxt_node);
-                            nxt_node.pre_node = new_node.id;
-                        }
-                        new_node.is_leaf = cur_node.is_leaf;
-                        new_node.nxt_node = cur_node.nxt_node; new_node.pre_node = cur_node.id;
-                        cur_node.nxt_node = new_node.id;
-
-                        inserted_index = cur_node.index[M / 2];
-                        inserted_value = cur_values.values[M / 2];
-                        inserted_ptr = new_node.id;
-                    }
-
-                    if (cur_node.id == basic_info.root_node_id){
-                        Node new_root;
-                        Node_Value new_root_values;
-                        new_root.id = allocate_node();
-                        basic_info.root_node_id = new_root.id;
-                        new_root.size = 1;
-                        new_root.is_leaf = 0;
-                        new_root.index[0] = inserted_index;
-                        new_root_values.values[0] = inserted_value;
-                        new_root.sons[0] = cur_node.id; new_root.sons[1] = inserted_ptr;
-
-                        if (exist_nxt_node) update_Node(nxt_node.id, nxt_node);
-                        update_Node_and_Values(new_root.id, new_root, new_root_values);
-                        update_Node_and_Values(cur_node.id, cur_node, cur_values);
-                        update_Node_and_Values(new_node.id, new_node, new_values);
-                        break;
-                    }
-                    if (exist_nxt_node) update_Node(nxt_node.id, nxt_node);
-                    update_Node_and_Values(cur_node.id, cur_node, cur_values);
-                    update_Node_and_Values(new_node.id, new_node, new_values);
-
-                    trace_cnt--;
-                    cur_node = read_Node(trace[trace_cnt]);
-                }
-            }
-
-        }
-        write_Basic_Information(basic_info);
-        return 1;
-    }
-
-    vector<T> search_values(const string& str_index){
-        long long index_hash = get_Hash(str_index);
-        vector<T> val = {};
-        basic_info = read_Basic_Information();
-        if (basic_info.root_node_id == 0){
-            return val;
-        }
-        Node cur_node = read_Node(basic_info.root_node_id);
-
-        while (!cur_node.is_leaf){
-            int pos = cur_node.size;
-            Node_Value node_values;
-
-            for (int i = 0; i < cur_node.size; i++)
-                if (index_hash <= cur_node.index[i]){
-                    pos = i;
-                    break;
-                }
-            if (cur_node.sons[pos] <= 0 || cur_node.sons[pos] >= Max_Nodes) throw std::runtime_error("out of range"); //for debug
-            cur_node = read_Node(cur_node.sons[pos]);
-        }
-        //then cur_node is a leaf_node
-        while (cur_node.index[cur_node.size - 1] < index_hash && cur_node.nxt_node > 0) {
-            cur_node = read_Node(cur_node.nxt_node);
-        }
-
-        Node_Value values = read_Node_Value(cur_node.id);
-        int flag = 1;
-        while (flag){
-            for (int i = 0; i < cur_node.size; i++)
-                if (cur_node.index[i] == index_hash){
-                    val.push_back(values.values[i]);
-                } else if (cur_node.index[i] > index_hash) {flag = 0; break;}
-            if (cur_node.nxt_node > 0) {
-                cur_node = read_Node(cur_node.nxt_node);
-                values = read_Node_Value(cur_node.id);
-            }
-            else break;
-        }
-        return val;
     }
 
     std::pair<int, int> get_siblings(int cur_id, Node parent_node){
@@ -878,6 +657,251 @@ public:
         }
     }
 
+    void output_dfs(int id, int space){
+        Node n = read_Node_disk(id);
+        Node_Value v = read_Node_Value_disk(id);
+        for (int ii= 0; ii < space; ii++) std::cout<<' ';
+        std::cout<<"Node_"<<id<<':'<<" size="<<n.size<<','<<','<<" is_leaf="<<n.is_leaf<<std::endl;
+        if (n.is_leaf){
+            for (int i = 0; i < n.size; i++){
+                for (int ii= 0; ii < space; ii++) std::cout<<' ';
+                std::cout<<"|son_"<<i<<':'<<n.index[i]<<','<<v.values[i]<<std::endl;
+            }
+        }else{
+            for (int ii= 0; ii < space; ii++) std::cout<<' ';
+            std::cout<<"|son_0:"<<std::endl;
+            output_dfs(n.sons[0], space + 3);
+            for (int i = 1; i <= n.size; i++){
+                for (int ii= 0; ii < space; ii++) std::cout<<' ';
+                std::cout<<"|son_"<<i<<": "<<n.index[i - 1]<<", "<<v.values[i - 1]<<std::endl;
+                output_dfs(n.sons[i], space + 3);
+            }
+        }
+    }
+
+public:
+
+    //buffer:
+    void pop_all_buffer(){
+        refresh_basic_info();
+        for (int i = 0; i < buffer.node_size; i++){
+            write_Node_disk(buffer.node_id[i], buffer.nodes[i]);
+        }
+        for (int i = 0; i < buffer.value_size; i++){
+            write_Node_Value_disk(buffer.value_id[i], buffer.values[i]);
+        }
+        buffer.time_tag = 1;
+        buffer.node_size = buffer.value_size = buffer.info_flag = 0;
+    }
+
+    long long get_Hash(const string& str1){
+        long long ha = 0;
+        for (int i = 0; i < str1.length(); i++)
+            ha = (ha * BASE + (long long)(str1[i]) ) % MOD;
+        return ha;
+    }
+
+
+    int initialise(string FN = "", int clear_file = 0){
+        if (!FN.empty()) filename = FN;
+        index_filename = filename + "_index.bpt";
+        value_filename = filename + "_value.bpt";
+
+        if (check_file_exists(index_filename) && check_file_exists(value_filename) && (!clear_file)) return 0; //文件已经存在就无需初始化
+
+        initialise_file();
+        file.open(index_filename, std::ios::in | std::ios::out | std::ios::binary);
+        assert(file.is_open());
+        file.close();
+        Basic_Information info1;
+        info1.root_node_id = 0; //0 means nullptr
+        for (int i = 1; i <= Max_Nodes; i++)
+            info1.empty_node_id[i-1] = i;
+        write_Basic_Information_disk(info1);
+
+        file_value.open(value_filename, std::ios::in | std::ios::out | std::ios::binary);
+        assert(file_value.is_open());
+        file_value.close();
+        return 1;
+    }
+
+
+    int insert(const string& str1, T value_){
+        //return 0 is key&value is same
+        long long index_hash = get_Hash(str1);
+
+        basic_info = read_Basic_Information();
+
+        if (basic_info.root_node_id == 0){ //BPTree is empty
+            basic_info.root_node_id = allocate_node();
+            Node new_node;
+            Node_Value new_node_value;
+            new_node.id = basic_info.root_node_id;
+            new_node.size = 1;
+            new_node.is_leaf = 1;
+            new_node.index[0] = index_hash;
+            new_node.sons[0] = 0;
+            new_node_value.values[0] = value_;
+            update_Node_and_Values(new_node.id, new_node, new_node_value);
+        } else {
+            std::pair<vector<int>, Node> ret_ = find_Node(index_hash, value_);
+            if (ret_.first.back() == -1) return 0;
+            Node cur_node = ret_.second;
+            vector<int> trace = ret_.first;
+            int trace_cnt = int(trace.size()) - 1;
+            //then insert in cur_node and not the head of cur_node is guaranteed
+            //we need to insert index_hash&inserted_value to cur_node
+            long long inserted_index = index_hash;
+            int inserted_ptr = 0;
+            T inserted_value = value_;
+
+            while (true){
+                if (cur_node.size < M){
+                    insert_node(cur_node, inserted_index, inserted_value, inserted_ptr);
+                    break;
+                } else {
+                    //split
+                    //insert on node then split the node
+                    //cur_node.size = M (attention: but has M + 1 sons)
+                    int exist_nxt_node = cur_node.nxt_node;
+                    Node new_node, nxt_node;
+                    Node_Value new_values, cur_values = read_Node_Value(cur_node.id);
+
+                    //insert first
+                    int pos = cur_node.size;
+                    for (int i = 0; i < cur_node.size; i++)
+                        if (cur_node.index[i] > inserted_index || cur_node.index[i] == inserted_index && cur_values.values[i] >inserted_value){
+                            pos = i;
+                            break;
+                        }
+                    for (int i = cur_node.size; i > pos; i--){
+                        cur_node.index[i] = cur_node.index[i - 1];
+                        cur_node.sons[i + 1] =cur_node.sons[i - 1 + 1];
+                        cur_values.values[i] = cur_values.values[i - 1];
+                    }
+                    cur_node.index[pos] = inserted_index;
+                    cur_node.sons[pos + 1] = inserted_ptr;
+                    cur_values.values[pos] = inserted_value;
+                    cur_node.size++;
+
+                    //then split, now cur_node.size = M + 1
+                    new_node.id = allocate_node();
+                    if (cur_node.is_leaf){
+                        cur_node.size = (M + 1) / 2;
+                        new_node.size = M + 1 - (M + 1) / 2;
+                        for (int i = 0; i < new_node.size; i++){
+                            new_node.index[i] = cur_node.index[i + (M + 1) / 2];
+                            new_node.sons[i] = cur_node.sons[i + (M + 1) / 2 + 1];
+                            new_values.values[i] = cur_values.values[i + (M + 1) / 2];
+                        }
+                        if (exist_nxt_node){
+                            nxt_node = read_Node(cur_node.nxt_node);
+                            nxt_node.pre_node = new_node.id;
+                        }
+                        new_node.is_leaf = cur_node.is_leaf;
+                        new_node.nxt_node = cur_node.nxt_node; new_node.pre_node = cur_node.id;
+                        cur_node.nxt_node = new_node.id;
+
+                        inserted_index = new_node.index[0];
+                        inserted_value = new_values.values[0];
+                        inserted_ptr = new_node.id;
+                    } else {
+                        new_node.size = M - M / 2;
+                        for (int i = 0; i < new_node.size; i++){
+                            new_node.index[i] = cur_node.index[i + M / 2 + 1];
+                            new_node.sons[i] = cur_node.sons[i + M / 2 + 1];
+                            new_values.values[i] = cur_values.values[i + M / 2 + 1];
+                        }
+                        new_node.sons[new_node.size] = cur_node.sons[cur_node.size];
+                        cur_node.size = M / 2;
+
+                        if (exist_nxt_node){
+                            nxt_node = read_Node(cur_node.nxt_node);
+                            nxt_node.pre_node = new_node.id;
+                        }
+                        new_node.is_leaf = cur_node.is_leaf;
+                        new_node.nxt_node = cur_node.nxt_node; new_node.pre_node = cur_node.id;
+                        cur_node.nxt_node = new_node.id;
+
+                        inserted_index = cur_node.index[M / 2];
+                        inserted_value = cur_values.values[M / 2];
+                        inserted_ptr = new_node.id;
+                    }
+
+                    if (cur_node.id == basic_info.root_node_id){
+                        Node new_root;
+                        Node_Value new_root_values;
+                        new_root.id = allocate_node();
+                        basic_info.root_node_id = new_root.id;
+                        new_root.size = 1;
+                        new_root.is_leaf = 0;
+                        new_root.index[0] = inserted_index;
+                        new_root_values.values[0] = inserted_value;
+                        new_root.sons[0] = cur_node.id; new_root.sons[1] = inserted_ptr;
+
+                        if (exist_nxt_node) update_Node(nxt_node.id, nxt_node);
+                        update_Node_and_Values(new_root.id, new_root, new_root_values);
+                        update_Node_and_Values(cur_node.id, cur_node, cur_values);
+                        update_Node_and_Values(new_node.id, new_node, new_values);
+                        break;
+                    }
+                    if (exist_nxt_node) update_Node(nxt_node.id, nxt_node);
+                    update_Node_and_Values(cur_node.id, cur_node, cur_values);
+                    update_Node_and_Values(new_node.id, new_node, new_values);
+
+                    trace_cnt--;
+                    cur_node = read_Node(trace[trace_cnt]);
+                }
+            }
+
+        }
+        write_Basic_Information(basic_info);
+        return 1;
+    }
+
+    vector<T> search_values(const string& str_index){
+        long long index_hash = get_Hash(str_index);
+        vector<T> val = {};
+        basic_info = read_Basic_Information();
+        if (basic_info.root_node_id == 0){
+            return val;
+        }
+        Node cur_node = read_Node(basic_info.root_node_id);
+
+        while (!cur_node.is_leaf){
+            int pos = cur_node.size;
+            Node_Value node_values;
+
+            for (int i = 0; i < cur_node.size; i++)
+                if (index_hash <= cur_node.index[i]){
+                    pos = i;
+                    break;
+                }
+            if (cur_node.sons[pos] <= 0 || cur_node.sons[pos] >= Max_Nodes) throw std::runtime_error("out of range"); //for debug
+            cur_node = read_Node(cur_node.sons[pos]);
+        }
+        //then cur_node is a leaf_node
+        while (cur_node.index[cur_node.size - 1] < index_hash && cur_node.nxt_node > 0) {
+            cur_node = read_Node(cur_node.nxt_node);
+        }
+
+        Node_Value values = read_Node_Value(cur_node.id);
+        int flag = 1;
+        while (flag){
+            for (int i = 0; i < cur_node.size; i++)
+                if (cur_node.index[i] == index_hash){
+                    val.push_back(values.values[i]);
+                } else if (cur_node.index[i] > index_hash) {flag = 0; break;}
+            if (cur_node.nxt_node > 0) {
+                cur_node = read_Node(cur_node.nxt_node);
+                values = read_Node_Value(cur_node.id);
+            }
+            else break;
+        }
+        return val;
+    }
+
+
     bool empty(){
         basic_info = read_Basic_Information();
         if (basic_info.root_node_id == 0) return true;
@@ -989,28 +1013,7 @@ public:
         return 1;
     }
 
-    void output_dfs(int id, int space){
-        Node n = read_Node_disk(id);
-        Node_Value v = read_Node_Value_disk(id);
-        for (int ii= 0; ii < space; ii++) std::cout<<' ';
-        std::cout<<"Node_"<<id<<':'<<" size="<<n.size<<','<<','<<" is_leaf="<<n.is_leaf<<std::endl;
-        if (n.is_leaf){
-            for (int i = 0; i < n.size; i++){
-                for (int ii= 0; ii < space; ii++) std::cout<<' ';
-                std::cout<<"|son_"<<i<<':'<<n.index[i]<<','<<v.values[i]<<std::endl;
-            }
-        }else{
-            for (int ii= 0; ii < space; ii++) std::cout<<' ';
-            std::cout<<"|son_0:"<<std::endl;
-            output_dfs(n.sons[0], space + 3);
-            for (int i = 1; i <= n.size; i++){
-                for (int ii= 0; ii < space; ii++) std::cout<<' ';
-                std::cout<<"|son_"<<i<<": "<<n.index[i - 1]<<", "<<v.values[i - 1]<<std::endl;
-                output_dfs(n.sons[i], space + 3);
-            }
-        }
-    }
-    void output(){
+    void output_tree_structure(){
         std::cout<<">>>>>>>>>>>>>>>"<<std::endl;
         Basic_Information info_ = read_Basic_Information_disk();
         if (info_.root_node_id == 0) {
