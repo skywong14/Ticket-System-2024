@@ -51,6 +51,10 @@ struct MyString{
     bool operator >= (const MyString<LENGTH>& obj) const {return !(*this < obj);}
     bool operator != (const MyString<LENGTH>& obj) const {return !(*this == obj);}
 
+    string to_string(){
+        return string(str, str + LENGTH);
+    }
+
     friend std::ostream& operator<<(std::ostream& os, const MyString& obj) {
         return os << obj.str;
     }
@@ -123,7 +127,6 @@ ReturnMode get_arguments(std::string (&arguments)[26], const vector<string>& cur
 ReturnMode get_Command_Head(Command_Head& ret, const vector<string>& tokens);
 
 vector<string> get_tokens();
-
 
 using ArgPair = std::pair<char, int>;
 

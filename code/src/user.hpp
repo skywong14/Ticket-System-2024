@@ -13,7 +13,19 @@ struct User_info{
     type_password password;
     type_realname realname;
     type_mailAddr mailAddr;
-    type_privilege privilege;
+    type_privilege privilege{};
+
+    bool operator<(const User_info& other) const { return privilege < other.privilege; }
+    bool operator==(const User_info& other) const { return privilege == other.privilege; }
+    bool operator>(const User_info& other) const { return privilege > other.privilege; }
+    bool operator!=(const User_info& other) const { return privilege != other.privilege; }
+    bool operator<=(const User_info& other) const { return privilege <= other.privilege; }
+    bool operator>=(const User_info& other) const { return privilege >= other.privilege; }
+
+    void output(){
+        std::cout<<userid<<' '<<realname<<' '
+                 <<mailAddr<<' '<<privilege<<std::endl;
+    }
 };
 
 class User_system{
@@ -38,9 +50,10 @@ public:
     //在数据库中查找
     bool User_exist(type_userid userid_);
 
+    bool delete_User(type_userid userid_, User_info info_);
+
     bool get_User_info(User_info &ret, type_userid userid_); //return false is not exist
 
-    bool delete_User(type_userid userid_);
 
     bool add_User(type_userid userid_, User_info info_);
 

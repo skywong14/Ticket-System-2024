@@ -23,6 +23,7 @@ Command_Name get_Command_Name(const string& str){
 }
 
 void output_ReturnMode(ReturnMode ret, int timestamp, string extra_info){
+    return;
     std::cout<<'['<<timestamp<<"] ";
     if (ret == ReturnMode::Correct) std::cout<<"Correct!"<<std::endl;
     if (ret != ReturnMode::Correct) std::cout<<"Invalid:";

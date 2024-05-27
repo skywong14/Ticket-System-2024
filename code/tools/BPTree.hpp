@@ -861,7 +861,7 @@ public:
 
     vector<T> search_values(const string& str_index){
         long long index_hash = get_Hash(str_index);
-        vector<T> val = {};
+        vector<T> val;
         basic_info = read_Basic_Information();
         if (basic_info.root_node_id == 0){
             return val;
@@ -877,7 +877,7 @@ public:
                     pos = i;
                     break;
                 }
-            if (cur_node.sons[pos] <= 0 || cur_node.sons[pos] >= Max_Nodes) throw std::runtime_error("out of range"); //for debug
+//            if (cur_node.sons[pos] <= 0 || cur_node.sons[pos] >= Max_Nodes) throw std::runtime_error("out of range"); //for debug
             cur_node = read_Node(cur_node.sons[pos]);
         }
         //then cur_node is a leaf_node

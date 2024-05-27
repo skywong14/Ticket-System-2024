@@ -24,6 +24,7 @@ bool check_arguments(char ch, int sz){
 
 int main(){
     freopen("Mytest.txt","r",stdin);
+    freopen("MyAnswer.txt","w",stdout);
     User_info cur_user_info, other_user_info, tmp_user_info;
     type_trainID train_id;
     bool ret_bool;
@@ -44,9 +45,9 @@ int main(){
         //time_stamp: com_head.first; command: com_head.second;
         //token_pair: -<key> and <argument>
 
+        std::cout<<'['<<com_head.first<<"] ";
         //保证所有指令输入格式均合法
         switch (com_head.second) {
-            output_ReturnMode(ReturnMode::Correct, com_head.first,  " for_test");
             case Command_Name::add_user:
                 //-c -u -p -n -m -g
 //                if (!(check_arguments('c', 20) && check_arguments('u', 20) && check_arguments('p', 30) &&
@@ -67,8 +68,8 @@ int main(){
                     ret_mode = ReturnMode::Correct;
 
                 } else if (user_system.logged_in(cur_user_info, type_userid(arguments['c' - 'a']))){ //已登陆
-                    if (cur_user_info.password == arguments['p' - 'a'] //密码正确
-                        && cur_user_info.privilege > std::stoi(arguments['g' - 'a']) //权限更高
+                    ret_mode = ReturnMode::Wrong_Value;
+                    if (cur_user_info.privilege > std::stoi(arguments['g' - 'a']) //权限更高
                         && !user_system.User_exist(arguments['u' - 'a']) ) { // 新增用户不存在
 
                         other_user_info.privilege = std::stoi(arguments['g' - 'a']);
@@ -81,7 +82,6 @@ int main(){
                     }
                 }
 
-                output_ReturnMode(ret_mode, com_head.first);
                 if (ret_mode == ReturnMode::Correct) std::cout<<0<<std::endl;
                 else std::cout<<-1<<std::endl;
                 break;
@@ -91,13 +91,13 @@ int main(){
 
                 if (!user_system.logged_in(other_user_info, arguments['u' - 'a']) //未登录
                         && user_system.get_User_info(cur_user_info, arguments['u' - 'a'])){ //user exist
+                    ret_mode = ReturnMode::Wrong_Value;
                     if (cur_user_info.password == arguments['p' - 'a']){ //密码正确
                         user_system.login(cur_user_info.userid, cur_user_info);
                         ret_mode = ReturnMode::Correct;
                     }
                 }
 
-                output_ReturnMode(ret_mode, com_head.first);
                 if (ret_mode == ReturnMode::Correct) std::cout<<0<<std::endl;
                 else std::cout<<-1<<std::endl;
                 break;
@@ -110,7 +110,6 @@ int main(){
                     ret_mode = ReturnMode::Correct;
                 }
 
-                output_ReturnMode(ret_mode, com_head.first);
                 if (ret_mode == ReturnMode::Correct) std::cout<<0<<std::endl;
                 else std::cout<<-1<<std::endl;
                 break;
@@ -119,9 +118,8 @@ int main(){
                 ret_mode = ReturnMode::Other_Error;
                 if (user_system.logged_in(cur_user_info, arguments['c' - 'a'])
                     && user_system.get_User_info(other_user_info, arguments['u' - 'a'])){
-                    if (cur_user_info.privilege >= other_user_info.privilege){
-                        std::cout<<other_user_info.userid<<' '<<other_user_info.realname<<' '
-                                 <<other_user_info.mailAddr<<' '<<other_user_info.privilege<<std::endl;
+                    if (cur_user_info.privilege > other_user_info.privilege || arguments['c' - 'a'] == arguments['u' - 'a']){
+                        other_user_info.output();
                         ret_mode = ReturnMode::Correct;
                     }
                 }
@@ -171,8 +169,9 @@ int main(){
                     }
                 }
 
-                output_ReturnMode(ret_mode, com_head.first);
-                if (ret_mode != ReturnMode::Correct) std::cout<<-1<<std::endl;
+                if (ret_mode == ReturnMode::Correct)
+                    other_user_info.output();
+                else std::cout<<-1<<std::endl;
                 break;
             case Command_Name::delete_train:
                 break;
@@ -197,6 +196,7 @@ int main(){
                 system_open = false;
                 break;
         }
+        output_ReturnMode(ret_mode, com_head.first);
     }
     return 0;
 }
