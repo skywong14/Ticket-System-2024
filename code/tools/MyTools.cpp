@@ -39,8 +39,17 @@ void output_ReturnMode(ReturnMode ret, int timestamp, string extra_info){
     if (ret != ReturnMode::Correct) std::cout<<std::endl;
 }
 
-void output_empty_time(){
-    std::cout<<"xx-xx xx:xx";
+string empty_time_string(){
+    return string("xx-xx xx:xx");
+}
+
+type_time setOffDate(type_time arriveDate, type_time startTime, type_time costTime){
+    return type_time( (arriveDate.Days() -  (startTime + costTime).Days()) * 1440  );
+    //startdate + date(starttime + cur_route.arrive[posStart]) ==  date(arriveDate)
+}
+
+string to_index(type_time time_, type_userid id_){
+    return std::to_string(time_.standard) + '|' + id_.to_string();
 }
 
 ReturnMode get_arguments(std::string (&arguments)[26], const vector<string>& cur_tokens){
@@ -100,4 +109,62 @@ vector<string> split_by_vertical_bar(const std::string& _str){
     while (std::getline(ss, item, '|'))
         result.push_back(item);
     return result;
+}
+
+template <typename T>
+vector<T> merge(const vector<T>& left, const vector<T>& right) {
+    vector<T> result;
+    auto left_it = left.begin();
+    auto right_it = right.begin();
+
+    while (left_it != left.end() && right_it != right.end()) {
+        if (*left_it <= *right_it) {
+            result.push_back(*left_it);
+            ++left_it;
+        } else {
+            result.push_back(*right_it);
+            ++right_it;
+        }
+    }
+    while (left_it != left.end()) {
+        result.push_back(*left_it);
+        ++left_it;
+    }
+    while (right_it != right.end()) {
+        result.push_back(*right_it);
+        ++right_it;
+    }
+    return result;
+}
+
+template <typename T>
+vector<T> mergeSort(const vector<T>& vec) {
+    if (vec.size() <= 1) return vec;
+    typename vector<T>::iterator middle = vec.begin() + (vec.size() / 2);
+    vector<T> left(vec.begin(), middle);
+    vector<T> right(middle, vec.end());
+
+    left = mergeSort(left);
+    right = mergeSort(right);
+
+    return merge(left, right);
+}
+
+template<typename T>
+vector<T> shared_elements(const vector<T>& vec1, const vector<T>& vec2){
+    vector<T> commonElements;
+    vector<T> sortedVec1 = mergeSort(vec1);
+    vector<T> sortedVec2 = mergeSort(vec2);
+
+    auto it1 = sortedVec1.begin(), it2 = sortedVec2.begin();
+    while (it1 != sortedVec1.end() && it2 != sortedVec2.end()){
+        if (*it1 == *it2){
+            commonElements.push_back(*it1);
+            *it1++; *it2++;
+        } else if (*it1 < *it2){
+            *it1++;
+        } else *it2++;
+    }
+
+    return commonElements;
 }

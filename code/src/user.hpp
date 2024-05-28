@@ -15,12 +15,12 @@ struct User_info{
     type_mailAddr mailAddr;
     type_privilege privilege{};
 
-    bool operator<(const User_info& other) const { return privilege < other.privilege; }
-    bool operator==(const User_info& other) const { return privilege == other.privilege; }
-    bool operator>(const User_info& other) const { return privilege > other.privilege; }
-    bool operator!=(const User_info& other) const { return privilege != other.privilege; }
-    bool operator<=(const User_info& other) const { return privilege <= other.privilege; }
-    bool operator>=(const User_info& other) const { return privilege >= other.privilege; }
+    bool operator<(const User_info& other) const { return userid < other.userid; }
+    bool operator==(const User_info& other) const { return userid == other.userid; }
+    bool operator>(const User_info& other) const { return userid > other.userid; }
+    bool operator!=(const User_info& other) const { return userid != other.userid; }
+    bool operator<=(const User_info& other) const { return userid <= other.userid; }
+    bool operator>=(const User_info& other) const { return userid >= other.userid; }
 
     void output(){
         std::cout<<userid<<' '<<realname<<' '

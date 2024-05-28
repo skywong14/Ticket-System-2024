@@ -18,6 +18,7 @@ using std::string;
 using sjtu::vector; // for debug only
 using sjtu::map;
 
+
 enum class ReturnMode{
     Correct, Lack_Permission, Invalid_Format, Out_Of_Range, Wrong_Value, Invalid_Operation, Other_Error
 };
@@ -82,9 +83,8 @@ using type_prices = int;
 constexpr int MonthDays[] = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366};
 
 class type_time{
-private:
-    int standard;
 public:
+    int standard;
     type_time():standard(0) {}
     explicit type_time(int sta_):standard(sta_) {}
     explicit type_time(const string& str){
@@ -131,17 +131,34 @@ public:
         ret.second = mins % 60;
         return ret;
     }
-    void print(){
+    bool operator<(const type_time& other) const { return standard < other.standard; }
+    bool operator==(const type_time& other) const { return standard == other.standard; }
+    bool operator>(const type_time& other) const { return standard > other.standard; }
+    bool operator!=(const type_time& other) const { return standard != other.standard; }
+    bool operator<=(const type_time& other) const { return standard <= other.standard; }
+    bool operator>=(const type_time& other) const { return standard >= other.standard; }
+    string to_string() const{
         std::pair<int, int> ret;
         ret = Date();
-        if (ret.first < 10) std::cout << '0'; std::cout << ret.first << '-';
-        if (ret.second < 10) std::cout << '0'; std::cout << ret.second << ' ';
+        string str{};
+        if (ret.first < 10) str = '0'; str = str + std::to_string(ret.first) + '-';
+        if (ret.second < 10) str = str + '0'; str = str + std::to_string(ret.second) + ' ';
         ret = Time();
-        if (ret.first < 10) std::cout << '0'; std::cout << ret.first << ':';
-        if (ret.second < 10) std::cout << '0'; std::cout << ret.second;
+        if (ret.first < 10) str = str + '0'; str = str + std::to_string(ret.first) + ':';
+        if (ret.second < 10) str = str + '0'; str = str + std::to_string(ret.second) + ' ';
+        return str;
     }
 };
-void output_empty_time();
+
+type_time setOffDate(type_time arriveDate, type_time startTime, type_time costTime);
+
+const type_time MaxTime = type_time(1e6);
+const type_time NegMaxTime = type_time(-1e6);
+const type_time A_Day = type_time(1440);
+
+string empty_time_string();
+
+string to_index(type_time time_, type_userid id_);
 
 void output_ReturnMode(ReturnMode ret, int timestamp = -1, string extra_info = "");
 
@@ -160,6 +177,12 @@ vector<string> split_by_vertical_bar(const string& str);
 
 void output_tokens(const vector<string>& tokens);
 
+template <typename T>
+vector<T> merge(const vector<T>& left, const vector<T>& right);
+template <typename T>
+vector<T> mergeSort(const vector<T>& vec);
 
+template<typename T>
+vector<T> shared_elements(const vector<T>& vec1, const vector<T>& vec2);
 
 #endif //TICKET_SYSTEM_2024_MYTOOLS_HPP

@@ -25,6 +25,13 @@ struct WaitingOrder{
     type_trainID trainId;
     int startStationId, endStationId; //0-based
     type_time data; //列车发车的日期
+    bool operator<(const WaitingOrder& other) const { return time_stamp < other.time_stamp; }
+    bool operator==(const WaitingOrder& other) const { return time_stamp == other.time_stamp; }
+    bool operator>(const WaitingOrder& other) const { return time_stamp > other.time_stamp; }
+    bool operator!=(const WaitingOrder& other) const { return time_stamp != other.time_stamp; }
+    bool operator<=(const WaitingOrder& other) const { return time_stamp <= other.time_stamp; }
+    bool operator>=(const WaitingOrder& other) const { return time_stamp >= other.time_stamp; }
+
 };
 
 class Order_System{

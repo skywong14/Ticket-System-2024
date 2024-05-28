@@ -4,12 +4,14 @@
 #include "user.hpp"
 #include "train.hpp"
 #include "../tools/MyTools.hpp"
+#include "order.hpp"
 
 vector<string> cur_tokens, other_tokens;
 string arguments[26];
 Command_Head com_head;
 User_system user_system;
 Train_System train_system;
+Order_System order_system;
 
 bool check_arguments(char ch, int sz){
     if (sz == -1){
@@ -27,13 +29,18 @@ int main(){
 //    freopen("Mytest.txt","r",stdin);
 //    freopen("MyAnswer.txt","w",stdout);
     User_info cur_user_info, other_user_info, tmp_user_info;
-    Train_Info cur_train, other_train;
+    Train_Info cur_train_info, other_train_info;
+    type_time cur_time, other_time;
     Train_Route cur_route;
+    type_stationName cur_station, other_station;
+    vector<Station> stations;
+    DayTicket day_ticket;
 
-    type_trainID train_id;
-    bool ret_bool;
+    type_trainID cur_train_id;
+    bool ret_bool, pending;
     bool the_first_user = user_system.empty();
     ReturnMode ret_mode;
+    int tmp_num;
 
     bool system_open = true;
     while (system_open){
@@ -179,7 +186,7 @@ int main(){
             case Command_Name::add_train:
                 // -i -n -m -s -p -x -t -o -d -y
                 ret_mode = ReturnMode::Correct;
-                if (train_system.exist_trainId(other_train, arguments['i' - 'a'])){
+                if (train_system.exist_trainId(other_train_info, arguments['i' - 'a'])){
                     ret_mode = ReturnMode::Wrong_Value;
                     std::cout<<-1<<std::endl;
                     break;
@@ -211,36 +218,117 @@ int main(){
                 //-d saleDate
                 other_tokens = split_by_vertical_bar(arguments['d' - 'a']);
                 assert(other_tokens.size() == 2);
-                cur_train.BeginDate = type_time(other_tokens[0]);
-                cur_train.EndDate = type_time(other_tokens[1]);
+                cur_train_info.BeginDate = type_time(other_tokens[0]);
+                cur_train_info.EndDate = type_time(other_tokens[1]);
 
-                cur_train.trainId = arguments['i' - 'a'];
-                cur_train.stationNum = cur_route.num;
-                cur_train.seatNum = std::stoi(arguments['m' - 'a']);
-                cur_train.startTime = type_time(arguments['x' - 'a']);
-                cur_train.routePtr = train_system.new_Train_Route(cur_route);
-                cur_train.type = arguments['y' - 'a'][0];
+                cur_train_info.trainId = arguments['i' - 'a'];
+                cur_train_info.stationNum = cur_route.num;
+                cur_train_info.seatNum = std::stoi(arguments['m' - 'a']);
+                cur_train_info.startTime = type_time(arguments['x' - 'a']);
+                cur_train_info.routePtr = train_system.new_Train_Route(cur_route);
+                cur_train_info.type = arguments['y' - 'a'][0];
+                cur_train_info.released = false;
                 assert(arguments['y' - 'a'].size() == 1); //for debug only
 
-                train_system.add_train(cur_train);
+                train_system.add_train(cur_train_id, cur_train_info);
 
                 std::cout<<0<<std::endl;
                 break;
             case Command_Name::delete_train:
+                // -i
+                ret_mode = ReturnMode::Wrong_Value;
 
+                cur_train_id = arguments['i' - 'a'];
+                if (train_system.exist_trainId(cur_train_info, cur_train_id)){
+                    ret_mode = ReturnMode::Invalid_Operation;
+                    if (cur_train_info.released == false){
+                        train_system.delete_train(cur_train_id, cur_train_info);
+                        ret_mode = ReturnMode::Correct;
+                    }
+                }
 
+                if (ret_mode == ReturnMode::Correct) std::cout<<0<<std::endl;
+                else std::cout<<-1<<std::endl;
                 break;
             case Command_Name::release_train:
                 // -i
+                ret_mode = ReturnMode::Other_Error;
+                cur_train_id = arguments['i' - 'a'];
+                if (train_system.exist_trainId(cur_train_info, cur_train_id)){
+                    ret_mode = ReturnMode::Invalid_Operation;
+                    if (!cur_train_info.released){
+                        train_system.release_train(cur_train_id, cur_train_info);
+                        ret_mode = ReturnMode::Correct;
+                    }
+                }
 
+                if (ret_mode == ReturnMode::Correct) std::cout<<0<<std::endl;
+                else std::cout<<-1<<std::endl;
                 break;
             case Command_Name::query_train:
+                // -i -d
+                ret_mode = ReturnMode::Other_Error;
+                cur_train_id = arguments['i' - 'a'];
+                cur_time = type_time( arguments['d' - 'a'] ); //date
+
+                ret_mode = train_system.query_train(cur_time, cur_train_id);
+
+                if (ret_mode != ReturnMode::Correct) std::cout<<-1<<std::endl;
                 break;
             case Command_Name::query_ticket:
+                // -s -t -d (-p time)
+                if (arguments['p' - 'a'].empty()) arguments['p' - 'a'] = "time";
+
+                cur_time = type_time(arguments['d' - 'a']);
+                cur_station = arguments['s' - 'a'];
+                other_station = arguments['t' - 'a'];
+
+                ret_mode = train_system.query_ticket(cur_time, cur_station, other_station, arguments['p' - 'a']);
                 break;
             case Command_Name::query_transfer:
+
+
+
                 break;
             case Command_Name::buy_ticket:
+                //-u -i -d -n -f -t (-q false)
+                ret_mode = ReturnMode::Other_Error;
+
+                if (arguments['q' - 'a'] == "true") pending = true; else pending = false;
+                cur_station = arguments['f' - 'a'];
+                other_station = arguments['t' - 'a'];
+                cur_time = type_time(arguments['d' - 'a']); //这里的日期是列车从 -f 出发的日期
+                cur_train_id = arguments['i' - 'a'];
+
+                if (user_system.logged_in(cur_user_info, arguments['u' - 'a'])
+                    && train_system.exist_trainId(cur_train_info, cur_train_id)
+                    && cur_train_info.released){
+                    //用户已登录，列车存在，且已发布
+                    cur_route = train_system.read_Train_Route(cur_train_info.routePtr);
+
+                    int posStart = cur_route.search_station(cur_station);
+                    assert(posStart >= 0); //for debug
+
+                    other_time = setOffDate(cur_time, cur_train_info.startTime, cur_route.arriveTimes[posStart]); //发车日
+
+                    if (train_system.exist_DayTicket(day_ticket, other_time, cur_train_id)){
+                        //列车时间正确，存在对应日子的DayTicket
+
+                        tmp_num = train_system.maximum_seats(cur_route, day_ticket, cur_station, other_station);
+
+                        if (tmp_num >= std::stoi(arguments['n' - 'a']) ){
+                            //todo: buy ticket and create order
+
+                            ret_mode = ReturnMode::Correct;
+                        } else {
+                            if (pending){
+                                //todo add to queue and create order
+                                ret_mode = ReturnMode::Correct;
+                            }
+                        }
+                    }
+                }
+                if (ret_mode != ReturnMode::Correct) std::cout<<-1<<std::endl;
                 break;
             case Command_Name::query_order:
                 break;
