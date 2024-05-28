@@ -93,7 +93,7 @@ public:
 
     bool exist_trainId(Train_Info &info_, type_trainID id_);
 
-    bool exist_DayTicket(DayTicket &day_tickey, type_time date, type_trainID trainId);
+    bool exist_DayTicket(DayTicket &day_ticket, type_time date, type_trainID trainId);
 
     void add_train(type_trainID id_, Train_Info info_);
 

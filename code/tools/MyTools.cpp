@@ -150,7 +150,7 @@ vector<T> mergeSort(const vector<T>& vec) {
     return merge(left, right);
 }
 
-template<typename T>
+template<class T>
 vector<T> shared_elements(const vector<T>& vec1, const vector<T>& vec2){
     vector<T> commonElements;
     vector<T> sortedVec1 = mergeSort(vec1);
@@ -165,6 +165,5 @@ vector<T> shared_elements(const vector<T>& vec1, const vector<T>& vec2){
             *it1++;
         } else *it2++;
     }
-
     return commonElements;
 }
