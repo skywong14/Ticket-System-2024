@@ -23,8 +23,8 @@ bool check_arguments(char ch, int sz){
 }
 
 int main(){
-    freopen("Mytest.txt","r",stdin);
-    freopen("MyAnswer.txt","w",stdout);
+//    freopen("Mytest.txt","r",stdin);
+//    freopen("MyAnswer.txt","w",stdout);
     User_info cur_user_info, other_user_info, tmp_user_info;
     type_trainID train_id;
     bool ret_bool;
@@ -51,9 +51,8 @@ int main(){
             case Command_Name::add_user:
                 //-c -u -p -n -m -g
 //                if (!(check_arguments('c', 20) && check_arguments('u', 20) && check_arguments('p', 30) &&
-//                    check_arguments('n', 15) && check_arguments('m', 30) && check_arguments('g', -1))) {
+//                    check_arguments('n', 15) && check_arguments('m', 30) && check_arguments('g', -1)))
 //                    continue;
-//                }
                 ret_mode = ReturnMode::Other_Error;
 
                 if (the_first_user){
@@ -173,9 +172,16 @@ int main(){
                     other_user_info.output();
                 else std::cout<<-1<<std::endl;
                 break;
+            case Command_Name::add_train:
+
+                break;
             case Command_Name::delete_train:
+
+
                 break;
             case Command_Name::release_train:
+                // -i
+
                 break;
             case Command_Name::query_train:
                 break;

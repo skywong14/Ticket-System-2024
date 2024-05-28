@@ -10,7 +10,7 @@
 struct Train_Info{
     type_trainID trainId;
     int stationNum;
-    type_stationName stations[100]; //stations[0]:StartStation
+    type_stationName stations[100]; //stations[0]:StartStation //todo
     int seatNum;
     int prices[100]; // price[0] = 0, 前缀和
     type_time stopoverTimes[100]; // [0]空着，每个站停靠时间
@@ -21,7 +21,7 @@ struct Train_Info{
 };
 
 //记录途径station的trainId（关键信息,用于query_train和query_transfer）
-struct station{
+struct Station{
     type_trainID trainId;
     int price_sum; //前缀和
     type_time arrive_time, stoptime;//从始发站到当前站点的时间，与停留时间
@@ -29,7 +29,7 @@ struct station{
 };
 
 //用startDate+TrainId区分，存储Seat相关信息
-struct ReleasedTrain{
+struct TrainTicket{
     type_time startDate;
     type_time startTime;
     type_trainID trainId;
@@ -38,11 +38,11 @@ struct ReleasedTrain{
 
 class Train_System{
 private:
-//    BPTree< > train_data; // key: trainId value: trainInfo
-//    BPTree< > releasedTrain_data; // key: day + trainId value: ReleasedTrain
-//    BPTree< > station_data; // key: stationName + trainId    value:station
+    BPTree< Train_Info > train_data; // key: trainId value: trainInfo
+    BPTree< TrainTicket > releasedTrain_data; // key: day + trainId value: ReleasedTrain
+    BPTree< Station > station_data; // key: stationName + trainId    value:station
 public:
-
+    Train_System();
 
     //分别查询经过起点站和终点站的车次，得到两个vector，找出两个vector中trainId一致的车次
     //要求：1.先到起点站再到终点站

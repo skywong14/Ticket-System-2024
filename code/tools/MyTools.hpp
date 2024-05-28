@@ -23,7 +23,7 @@ enum class ReturnMode{
 };
 enum class Command_Name {
     add_user, login, logout, query_profile, modify_profile,
-    delete_train, release_train, query_train, query_ticket,
+    add_train, delete_train, release_train, query_train, query_ticket,
     query_transfer, buy_ticket, query_order, refund_ticket,
     clean, exit, unknown
 };
@@ -71,6 +71,7 @@ using type_mailAddr = MyString<31>;
 using type_privilege = int;
 //Train
 using type_trainID = MyString<21>;
+using type_stationName_ptr = int;
 using type_stationName = MyString<31>;
 using type_stationNum = int;
 using type_searNum = int;

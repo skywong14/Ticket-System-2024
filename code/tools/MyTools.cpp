@@ -9,6 +9,7 @@ Command_Name get_Command_Name(const string& str){
     else if (str == "logout") return Command_Name::logout;
     else if (str == "query_profile") return Command_Name::query_profile;
     else if (str == "modify_profile") return Command_Name::modify_profile;
+    else if (str == "add_train") return Command_Name::add_train;
     else if (str == "delete_train") return Command_Name::delete_train;
     else if (str == "release_train") return Command_Name::release_train;
     else if (str == "query_train") return Command_Name::query_train;
@@ -23,7 +24,6 @@ Command_Name get_Command_Name(const string& str){
 }
 
 void output_ReturnMode(ReturnMode ret, int timestamp, string extra_info){
-    return;
     std::cout<<'['<<timestamp<<"] ";
     if (ret == ReturnMode::Correct) std::cout<<"Correct!"<<std::endl;
     if (ret != ReturnMode::Correct) std::cout<<"Invalid:";
