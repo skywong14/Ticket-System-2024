@@ -14,6 +14,7 @@ using std::fstream;
 using std::ifstream;
 using std::ofstream;
 
+//ATTENTION: 1-based!
 template<class T, int info_len = 2>
 class LinerMemory {
 private:

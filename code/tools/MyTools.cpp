@@ -39,6 +39,9 @@ void output_ReturnMode(ReturnMode ret, int timestamp, string extra_info){
     if (ret != ReturnMode::Correct) std::cout<<std::endl;
 }
 
+void output_empty_time(){
+    std::cout<<"xx-xx xx:xx";
+}
 
 ReturnMode get_arguments(std::string (&arguments)[26], const vector<string>& cur_tokens){
     for (int i = 0; i < 26; i++)
@@ -90,3 +93,11 @@ void output_tokens(const vector<string>& tokens){
 }
 
 
+vector<string> split_by_vertical_bar(const std::string& _str){
+    vector<string> result;
+    std::stringstream ss(_str);
+    string item;
+    while (std::getline(ss, item, '|'))
+        result.push_back(item);
+    return result;
+}

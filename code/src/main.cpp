@@ -2,12 +2,14 @@
 #include <iostream>
 #include <cstdio>
 #include "user.hpp"
+#include "train.hpp"
 #include "../tools/MyTools.hpp"
 
-vector<string> cur_tokens;
+vector<string> cur_tokens, other_tokens;
 string arguments[26];
 Command_Head com_head;
 User_system user_system;
+Train_System train_system;
 
 bool check_arguments(char ch, int sz){
     if (sz == -1){
@@ -21,11 +23,13 @@ bool check_arguments(char ch, int sz){
     }
     return true;
 }
-
 int main(){
 //    freopen("Mytest.txt","r",stdin);
 //    freopen("MyAnswer.txt","w",stdout);
     User_info cur_user_info, other_user_info, tmp_user_info;
+    Train_Info cur_train, other_train;
+    Train_Route cur_route;
+
     type_trainID train_id;
     bool ret_bool;
     bool the_first_user = user_system.empty();
@@ -173,7 +177,54 @@ int main(){
                 else std::cout<<-1<<std::endl;
                 break;
             case Command_Name::add_train:
+                // -i -n -m -s -p -x -t -o -d -y
+                ret_mode = ReturnMode::Correct;
+                if (train_system.exist_trainId(other_train, arguments['i' - 'a'])){
+                    ret_mode = ReturnMode::Wrong_Value;
+                    std::cout<<-1<<std::endl;
+                    break;
+                }
 
+                //searNum
+                cur_route.num = std::stoi(arguments['n' - 'a']);
+                //-s stations
+                other_tokens = split_by_vertical_bar(arguments['s' - 'a']);
+                assert(cur_route.num == other_tokens.size()); // for debug only
+                cur_route.write_info('s', other_tokens);
+
+                //-o stopoverTimes
+                other_tokens = split_by_vertical_bar(arguments['o' - 'a']);
+                if (other_tokens[0] == "_") other_tokens.clear();
+                cur_route.write_info('o', other_tokens);
+
+                //-t travelTimes
+                other_tokens = split_by_vertical_bar(arguments['t' - 'a']);
+                cur_route.write_info('t', other_tokens);
+
+                //-p prices
+                other_tokens = split_by_vertical_bar(arguments['p' - 'a']);
+                cur_route.write_info('p', other_tokens);
+
+                //calc arriveTimes
+                cur_route.calc_arrive();
+
+                //-d saleDate
+                other_tokens = split_by_vertical_bar(arguments['d' - 'a']);
+                assert(other_tokens.size() == 2);
+                cur_train.BeginDate = type_time(other_tokens[0]);
+                cur_train.EndDate = type_time(other_tokens[1]);
+
+                cur_train.trainId = arguments['i' - 'a'];
+                cur_train.stationNum = cur_route.num;
+                cur_train.seatNum = std::stoi(arguments['m' - 'a']);
+                cur_train.startTime = type_time(arguments['x' - 'a']);
+                cur_train.routePtr = train_system.new_Train_Route(cur_route);
+                cur_train.type = arguments['y' - 'a'][0];
+                assert(arguments['y' - 'a'].size() == 1); //for debug only
+
+                train_system.add_train(cur_train);
+
+                std::cout<<0<<std::endl;
                 break;
             case Command_Name::delete_train:
 

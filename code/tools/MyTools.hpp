@@ -82,14 +82,37 @@ using type_prices = int;
 constexpr int MonthDays[] = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366};
 
 class type_time{
-public:
+private:
     int standard;
+public:
     type_time():standard(0) {}
     explicit type_time(int sta_):standard(sta_) {}
+    explicit type_time(const string& str){
+        standard = 0;
+        if (str[2] == '-') {
+            standard = (MonthDays[std::stoi(str.substr(0, 2)) - 1]
+                    + (std::stoi(str.substr(3, 2)) - 1)) * 1440;
+        } else if (str[2] == ':'){
+            standard = std::stoi(str.substr(0, 2)) * 60
+                        + std::stoi(str.substr(3, 2));
+        }
+    }
     type_time(int Month_, int Day_, int Hour_ = 0, int Min_ = 0){
         standard =  (MonthDays[Month_ - 1] + (Day_ - 1)) * 1440 + Hour_ * 60 + Min_;
     }
-    std::pair<int, int> Date(){
+
+    type_time operator+(const type_time& other) const {
+        type_time result(standard + other.standard);
+        return result;
+    }
+    type_time operator-(const type_time& other) const {
+        type_time result(standard - other.standard);
+        return result;
+    }
+    int Days() const{ return standard / 1440; }
+    int Minutes() const{ return standard % 1440; }
+
+    std::pair<int, int> Date() const{
         //01-01: days = 0; 01-31: days = 30;
         int days = standard / 1440;
         std::pair<int, int> ret;
@@ -101,7 +124,7 @@ public:
         ret.second = days - MonthDays[ret.first - 1] + 1;
         return ret;
     }
-    std::pair<int, int> Time(){
+    std::pair<int, int> Time() const{
         std::pair<int, int> ret;
         int mins = standard % 1440;
         ret.first = mins / 60;
@@ -115,9 +138,10 @@ public:
         if (ret.second < 10) std::cout << '0'; std::cout << ret.second << ' ';
         ret = Time();
         if (ret.first < 10) std::cout << '0'; std::cout << ret.first << ':';
-        if (ret.second < 10) std::cout << '0'; std::cout << ret.second << '\n';
+        if (ret.second < 10) std::cout << '0'; std::cout << ret.second;
     }
 };
+void output_empty_time();
 
 void output_ReturnMode(ReturnMode ret, int timestamp = -1, string extra_info = "");
 
@@ -131,6 +155,8 @@ vector<string> get_tokens();
 
 using ArgPair = std::pair<char, int>;
 
+//按照“|”分割
+vector<string> split_by_vertical_bar(const string& str);
 
 void output_tokens(const vector<string>& tokens);
 
