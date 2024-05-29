@@ -109,6 +109,8 @@ public:
 
     int maximum_seats(Train_Route route_, DayTicket day_ticket_, type_stationName sta1, type_stationName sta2);
 
+    void buy_ticket(DayTicket dayTicket, int posStart, int posEnd, int num);
+
     vector<Station> query_related_train(type_stationName stationName);
 
     //分别查询经过起点站和终点站的车次，得到两个vector，找出两个vector中trainId一致的车次

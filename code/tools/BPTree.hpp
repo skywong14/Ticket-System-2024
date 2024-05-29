@@ -29,6 +29,7 @@ private:
 
     struct Basic_Information{
         int root_node_id = 0;
+        int other_info = 0;
         int empty_node_id[Max_Nodes]{};
     };
     struct Node{
@@ -197,10 +198,11 @@ private:
     Node get_Node(int id_){
         buffer.time_tag++;
         for (int i = 0; i < buffer.node_size; i++)
-        if (buffer.node_id[i] == id_){
-            buffer.node_time[i] = buffer.time_tag;
-            return buffer.nodes[i];
-        }
+            if (buffer.node_id[i] == id_){
+                buffer.node_time[i] = buffer.time_tag;
+                return buffer.nodes[i];
+            }
+        throw std::runtime_error("really?");
     }
     Node_Value get_Node_Value(int id_){
         buffer.time_tag++;
@@ -209,6 +211,7 @@ private:
                 buffer.value_time[i] = buffer.time_tag;
                 return buffer.values[i];
             }
+        throw std::runtime_error("really?");
     }
     //-----------------------------
 
@@ -229,6 +232,7 @@ private:
             push_node(pos_, node_);
             return node_;
         }
+        throw std::runtime_error("really?");
     }
 
     void write_Node(int pos_, Node node_){
@@ -246,6 +250,7 @@ private:
             push_node_value(pos_, val_);
             return val_;
         }
+        throw std::runtime_error("really?");
     }
     void write_Node_Value(int pos_, Node_Value val_){
         if (Node_Value_in_buffer(pos_)){
@@ -901,6 +906,15 @@ public:
         return val;
     }
 
+    void write_other_info(int val){
+        basic_info = read_Basic_Information();
+        basic_info.other_info = val;
+        write_Basic_Information(basic_info);
+    }
+    int read_other_info(){
+        basic_info = read_Basic_Information();
+        return basic_info.other_info;
+    }
 
     bool empty(){
         basic_info = read_Basic_Information();

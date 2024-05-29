@@ -203,6 +203,18 @@ Train_System::maximum_seats(Train_Route route_, DayTicket day_ticket_, type_stat
     return seatInfo.seat_num - num;
 }
 
+void Train_System::buy_ticket(DayTicket dayTicket, int posStart, int posEnd, int num) {
+    type_time cur_day = dayTicket.date;
+    type_trainID cur_train = dayTicket.trainId;
+
+    Seat_Info seatInfo = seat_data.read_T(dayTicket.seatInfo_ptr);
+    for (int i = posStart; i < posEnd; i++){
+        seatInfo.seat_sell[i] += num;
+        assert(seatInfo.seat_sell[i] <= seatInfo.seat_num);
+    }
+    seat_data.write_T(dayTicket.seatInfo_ptr, seatInfo);
+}
+
 
 void Train_Route::write_info(char ch, vector<string> val_) {
     int sum;

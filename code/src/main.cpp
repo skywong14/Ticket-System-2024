@@ -35,6 +35,7 @@ int main(){
     type_stationName cur_station, other_station;
     vector<Station> stations;
     DayTicket day_ticket;
+    Order order_info;
 
     type_trainID cur_train_id;
     bool ret_bool, pending;
@@ -61,9 +62,6 @@ int main(){
         switch (com_head.second) {
             case Command_Name::add_user:
                 //-c -u -p -n -m -g
-//                if (!(check_arguments('c', 20) && check_arguments('u', 20) && check_arguments('p', 30) &&
-//                    check_arguments('n', 15) && check_arguments('m', 30) && check_arguments('g', -1)))
-//                    continue;
                 ret_mode = ReturnMode::Other_Error;
 
                 if (the_first_user){
@@ -241,7 +239,7 @@ int main(){
                 cur_train_id = arguments['i' - 'a'];
                 if (train_system.exist_trainId(cur_train_info, cur_train_id)){
                     ret_mode = ReturnMode::Invalid_Operation;
-                    if (cur_train_info.released == false){
+                    if (!cur_train_info.released){
                         train_system.delete_train(cur_train_id, cur_train_info);
                         ret_mode = ReturnMode::Correct;
                     }
@@ -307,22 +305,48 @@ int main(){
                     cur_route = train_system.read_Train_Route(cur_train_info.routePtr);
 
                     int posStart = cur_route.search_station(cur_station);
-                    assert(posStart >= 0); //for debug
+                    int posEnd = cur_route.search_station(other_station);
+                    assert(posStart >= 0 && posEnd >= 0); //for debug
 
                     other_time = setOffDate(cur_time, cur_train_info.startTime, cur_route.arriveTimes[posStart]); //发车日
 
-                    if (train_system.exist_DayTicket(day_ticket, other_time, cur_train_id)){
+                    if (std::stoi(arguments['n' - 'a']) <= cur_train_info.seatNum //不超过最大Seat数
+                            && train_system.exist_DayTicket(day_ticket, other_time, cur_train_id)){
                         //列车时间正确，存在对应日子的DayTicket
+                        //other_time为始发日期
+                        //抵达时间 other_time + cur_train_info.startTime + cur_route.arriveTimes[posStart]
+                        //离开始发站时间 other_time + cur_train_info.startTime + cur_route.arriveTimes[posStart] + cur_route.stopoverTimes[posStart]
 
                         tmp_num = train_system.maximum_seats(cur_route, day_ticket, cur_station, other_station);
 
-                        if (tmp_num >= std::stoi(arguments['n' - 'a']) ){
-                            //todo: buy ticket and create order
+                        order_info.orderId = order_system.allocate_new_orderId(); //可能会产生空着的
+                        order_info.userid = cur_user_info.userid;
+                        order_info.trainId = cur_train_id;
+                        order_info.trainType = cur_train_info.type;
+                        order_info.num = std::stoi(arguments['n' - 'a']);
+                        order_info.startStationPos = posStart;
+                        order_info.endStationPos = posEnd;
+                        order_info.startStation = cur_route.stations[posStart];
+                        order_info.endStation = cur_route.stations[posEnd];
+                        order_info.startTime = type_time(other_time + cur_train_info.startTime + cur_route.arriveTimes[posStart] + cur_route.stopoverTimes[posStart]);
+                        order_info.endTime = type_time(other_time + cur_train_info.startTime + cur_route.arriveTimes[posEnd]);
+                        order_info.date = other_time;
+                        order_info.unit_price = cur_route.prices[posEnd] - cur_route.prices[posStart];
 
+                        if (tmp_num >= std::stoi(arguments['n' - 'a']) ){
+                            //buy ticket and create order
+                            train_system.buy_ticket(day_ticket, posStart, posEnd, std::stoi(arguments['n' - 'a']));
+
+                            order_system.create_order(cur_user_info.userid, order_info);
+
+                            std::cout<<order_info.unit_price * order_info.num<<std::endl;
                             ret_mode = ReturnMode::Correct;
                         } else {
+                            ret_mode = ReturnMode::Wrong_Value;
                             if (pending){
-                                //todo add to queue and create order
+                                //add to queue and create order
+                                order_system.create_waiting_order(cur_user_info.userid, order_info);
+                                std::cout<<"queue"<<std::endl;
                                 ret_mode = ReturnMode::Correct;
                             }
                         }
@@ -331,10 +355,21 @@ int main(){
                 if (ret_mode != ReturnMode::Correct) std::cout<<-1<<std::endl;
                 break;
             case Command_Name::query_order:
+                // -u
+                ret_mode = ReturnMode::Other_Error;
+
+                if (user_system.logged_in(cur_user_info, arguments['u' - 'a'])){
+                    order_system.query_order(cur_user_info.userid);
+                    ret_mode = ReturnMode::Correct;
+                }
+
+                if (ret_mode != ReturnMode::Correct) std::cout<<-1<<std::endl;
                 break;
             case Command_Name::refund_ticket:
+
                 break;
             case Command_Name::clean:
+
                 break;
             case Command_Name::exit:
                 std::cout<<"bye"<<std::endl;

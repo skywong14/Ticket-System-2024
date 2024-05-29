@@ -7,40 +7,47 @@
 #include "../tools/MyTools.hpp"
 
 struct Order{
-    int time_stamp = 0; //时间戳，下单时间
-    int num = 0, unit_price = 0;
+    int orderId{}; //订单编号
+    int num{}, unit_price{};
     type_userid userid; //购票者
+    char trainType{};
+    type_time date; //列车发车的日期
     type_trainID trainId;
     type_stationName startStation, endStation;
-    int startStationId, endStationId; //0-based
-    type_time data; //列车发车的日期
-    //other...
+    int startStationPos{}, endStationPos{}; //0-based
+    type_time startTime, endTime;
+    bool operator<(const Order& other) const { return orderId < other.orderId; }
+    bool operator==(const Order& other) const { return orderId == other.orderId; }
+    bool operator>(const Order& other) const { return orderId > other.orderId; }
+    bool operator!=(const Order& other) const { return orderId != other.orderId; }
+    bool operator<=(const Order& other) const { return orderId <= other.orderId; }
+    bool operator>=(const Order& other) const { return orderId >= other.orderId; }
+    string to_string(int state);
 };
 
-//补票中
-struct WaitingOrder{
-    int time_stamp = 0; //时间戳，提交候补时间
-    int num = 0, unit_price = 0;
-    type_userid userid; //购票者
-    type_trainID trainId;
-    int startStationId, endStationId; //0-based
-    type_time data; //列车发车的日期
-    bool operator<(const WaitingOrder& other) const { return time_stamp < other.time_stamp; }
-    bool operator==(const WaitingOrder& other) const { return time_stamp == other.time_stamp; }
-    bool operator>(const WaitingOrder& other) const { return time_stamp > other.time_stamp; }
-    bool operator!=(const WaitingOrder& other) const { return time_stamp != other.time_stamp; }
-    bool operator<=(const WaitingOrder& other) const { return time_stamp <= other.time_stamp; }
-    bool operator>=(const WaitingOrder& other) const { return time_stamp >= other.time_stamp; }
-
+struct OrderId{
+    int state{};
+    int orderId{};
+    bool operator<(const OrderId& other) const { return orderId < other.orderId; }
+    bool operator==(const OrderId& other) const { return orderId == other.orderId; }
+    bool operator>(const OrderId& other) const { return orderId > other.orderId; }
+    bool operator!=(const OrderId& other) const { return orderId != other.orderId; }
+    bool operator<=(const OrderId& other) const { return orderId <= other.orderId; }
+    bool operator>=(const OrderId& other) const { return orderId >= other.orderId; }
 };
 
 class Order_System{
 private:
-//    BPTree< > order_data;  //key: oderId          value: Order(struct)
-//    BPTree< > user_order;  //key: userId          value: orderId
-//    BPTree< > order_queue; //key: userId + trainId  value: WaitingOrder
+    BPTree< Order > order_data; //key: oderId   value: Order
+    BPTree< Order > waitingOrder_data;  //key: oderId   value: Order
+    BPTree< OrderId > userOrder_data;  //key: userId  value: orderId
+    BPTree< int > waitingQueue_data; //key: day + '|' + trainId  value: int(orderId)
 public:
-
+    Order_System();
+    int allocate_new_orderId();
+    void create_order(type_userid cur_user, Order order_info);
+    void create_waiting_order(type_userid cur_user, Order waitingOrder_info);
+    void query_order(type_userid cur_user);
 };
 
 #endif //TICKET_SYSTEM_2024_ORDER_HPP
