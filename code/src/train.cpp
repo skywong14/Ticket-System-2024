@@ -251,6 +251,12 @@ void Train_System::buy_ticket(DayTicket dayTicket, int posStart, int posEnd, int
     seat_data.write_T(dayTicket.seatInfo_ptr, seatInfo);
 }
 
+type_Seat_Info_ptr Train_System::refund_ticket(Single_Pass singlePass) {
+    DayTicket dayTicket = ticket_data.search_values(to_index(singlePass.date, singlePass.trainId))[0];
+    buy_ticket(dayTicket,singlePass.startStationPos, singlePass.endStationPos, -singlePass.num );
+    return  dayTicket.seatInfo_ptr;
+}
+
 Seat_Info Train_System::query_seat_info(type_time date, type_trainID trainId) {
     vector<DayTicket> ret = ticket_data.search_values(to_index(date, trainId));
     assert(ret.size() == 1);
@@ -263,7 +269,6 @@ int Train_System::maximum_seats(type_time date, type_trainID trainId, int pos1, 
     for (int i = pos1; i < pos2; i++)
         num = std::max(num, seatInfo.seat_sell[i]);
     return seatInfo.seat_num - num;
-    return 0;
 }
 
 

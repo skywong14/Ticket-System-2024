@@ -36,7 +36,6 @@ struct OrderId{
 class Order_System{
 private:
     BPTree< Order > order_data; //key: oderId   value: Order
-    BPTree< Order > waitingOrder_data;  //key: oderId   value: Order
     BPTree< OrderId > userOrder_data;  //key: userId  value: orderId
     BPTree< int > waitingQueue_data; //key: day + '|' + trainId  value: int(orderId)
 public:
@@ -45,6 +44,7 @@ public:
     void create_order(type_userid cur_user, Order order_info);
     void create_waiting_order(type_userid cur_user, Order waitingOrder_info);
     void query_order(type_userid cur_user);
+    void check_waitingQueue(type_time date, type_trainID trainId, type_Seat_Info_ptr seatInfoPtr);
     ReturnMode refund_ticket(type_userid cur_user, int num);
 };
 

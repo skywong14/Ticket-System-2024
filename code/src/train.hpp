@@ -4,7 +4,6 @@
 #ifndef TICKET_SYSTEM_2024_TRAIN_HPP
 #define TICKET_SYSTEM_2024_TRAIN_HPP
 
-//#include "order.hpp"
 #include "../tools/BPTree.hpp"
 #include "../tools/MyTools.hpp"
 #include "../tools/LinerMemory.h"
@@ -180,6 +179,7 @@ public:
     int maximum_seats(type_time date, type_trainID trainId, int pos1, int pos2);
     int maximum_seats(Train_Route route_, DayTicket day_ticket_, type_stationName sta1, type_stationName sta2);
 
+    type_Seat_Info_ptr refund_ticket(Single_Pass singlePass);
     void buy_ticket(DayTicket dayTicket, int posStart, int posEnd, int num);
 
     vector<Station> query_related_train(type_stationName stationName);
