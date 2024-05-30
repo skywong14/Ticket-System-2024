@@ -3,21 +3,21 @@ project(Ticket_System_2024)
 
 set(CMAKE_CXX_STANDARD 20)
 
-include_directories(code/My_Stl)
-include_directories(code/tools)
+include_directories(codes/My_Stl)
+include_directories(codes/tools)
 
-add_executable(code
-        code/My_Stl/exceptions.hpp
-        code/My_Stl/vector.hpp
-        code/src/main.cpp
-        code/tools/BPTree.hpp
-        code/tools/MyTools.hpp
-        code/src/user.cpp
-        code/src/user.hpp
-        code/src/train.hpp
-        code/My_Stl/map.hpp
-        code/tools/MyTools.cpp
-        code/src/order.hpp
-        code/src/order.cpp
-        code/tools/LinerMemory.h
-        code/src/train.cpp)
+add_executable(codes
+        codes/My_Stl/exceptions.hpp
+        codes/My_Stl/vector.hpp
+        codes/src/main.cpp
+        codes/tools/BPTree.hpp
+        codes/tools/MyTools.hpp
+        codes/src/user.cpp
+        codes/src/user.hpp
+        codes/src/train.hpp
+        codes/My_Stl/map.hpp
+        codes/tools/MyTools.cpp
+        codes/src/order.hpp
+        codes/src/order.cpp
+        codes/tools/LinerMemory.h
+        codes/src/train.cpp)

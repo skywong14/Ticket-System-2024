@@ -97,7 +97,7 @@ def execute_program(program_name, input_file, output_file, expected_output, time
         return False, "Time limit exceeded", max_memory_usage, ""
 
     if process.returncode != 0:
-        return False, f"Process failed with return code {process.returncode}", max_memory_usage, ""
+        return False, f"Process failed with return codes {process.returncode}", max_memory_usage, ""
 
     if not compare_files(temp_directory + output_file, expected_output):
         # subprocess.Popen(
@@ -157,7 +157,7 @@ if __name__ == "__main__":
         (1, 1), (2, 2), (3, 7), (8, 12), (13, 22), (23, 32), (33, 42), (43, 52),
         (53, 62), (63, 72), (73, 82), (83, 92), (93, 102)
     ]  # 定义你的测试范围
-    program_name = "./../cmake-build-debug/code"
+    program_name = "./../cmake-build-debug/codes"
     input_prefix = "../testcases/"
     output_prefix = ""
     expected_output_prefix = "testcases/"
