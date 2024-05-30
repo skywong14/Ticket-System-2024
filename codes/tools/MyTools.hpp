@@ -12,7 +12,6 @@
 #include <cstdio>
 #include "../My_Stl/vector.hpp"
 #include "../My_Stl/map.hpp"
-#include <vector> // for debug only
 
 using std::string;
 using sjtu::vector; // for debug only

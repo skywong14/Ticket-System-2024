@@ -16,19 +16,6 @@ Order_System order_system;
 CmpSinglePass_Time cmpSinglePass_Time;
 CmpSinglePass_Cost cmpSinglePass_Cost;
 
-bool check_arguments(char ch, int sz){
-    if (sz == -1){
-        try{
-            std::stoi(arguments[ch - 'a']);
-        } catch (...){
-            return false;
-        }
-    } else {
-        if (arguments[ch - 'a'].size() > sz) return false;
-    }
-    return true;
-}
-
 int main(){
 //    freopen("MyTest.txt","r",stdin);
 //    freopen("MyAnswer.txt","w",stdout);
