@@ -5,17 +5,25 @@
 #define TICKET_SYSTEM_2024_ORDER_HPP
 #include "../tools/BPTree.hpp"
 #include "../tools/MyTools.hpp"
+#include "train.hpp"
 
-struct Order{
-    int orderId{}; //订单编号
+struct Single_Pass{
     int num{}, unit_price{};
-    type_userid userid; //购票者
     char trainType{};
     type_time date; //列车发车的日期
     type_trainID trainId;
     type_stationName startStation, endStation;
     int startStationPos{}, endStationPos{}; //0-based
     type_time startTime, endTime;
+    string to_string();
+};
+Single_Pass get_Single_Pass(type_time cur_date, Train_Info trainInfo, Train_Route route, int num, type_stationName staStart, type_stationName staEnd);
+
+struct Order{
+    int orderId{}; //订单编号
+    type_userid userid; //购票者
+    Single_Pass singlePass;
+
     bool operator<(const Order& other) const { return orderId < other.orderId; }
     bool operator==(const Order& other) const { return orderId == other.orderId; }
     bool operator>(const Order& other) const { return orderId > other.orderId; }

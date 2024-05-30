@@ -53,7 +53,10 @@ struct MyString{
     bool operator != (const MyString<LENGTH>& obj) const {return !(*this == obj);}
 
     string to_string(){
-        return string(str, str + LENGTH);
+        int len = 0;
+        while (str[len] != '\0' && len < LENGTH)
+            len++;
+        return string(str, str + len);
     }
 
     friend std::ostream& operator<<(std::ostream& os, const MyString& obj) {
@@ -150,7 +153,7 @@ public:
     }
 };
 
-type_time setOffDate(type_time arriveDate, type_time startTime, type_time costTime);
+type_time setOffDate(type_time arriveDate, type_time startTime, type_time stopTime, type_time costTime);
 
 const type_time MaxTime = type_time(1e6);
 const type_time NegMaxTime = type_time(-1e6);

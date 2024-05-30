@@ -24,6 +24,7 @@ Command_Name get_Command_Name(const string& str){
 }
 
 void output_ReturnMode(ReturnMode ret, int timestamp, string extra_info){
+//    return;
     std::cout<<'['<<timestamp<<"] ";
     if (ret == ReturnMode::Correct) std::cout<<"Correct!"<<std::endl;
     if (ret != ReturnMode::Correct) std::cout<<"Invalid:";
@@ -43,9 +44,9 @@ string empty_time_string(){
     return string("xx-xx xx:xx");
 }
 
-type_time setOffDate(type_time arriveDate, type_time startTime, type_time costTime){
-    return type_time( (arriveDate.Days() -  (startTime + costTime).Days()) * 1440  );
-    //startdate + date(starttime + cur_route.arrive[posStart]) ==  date(arriveDate)
+type_time setOffDate(type_time arriveDate, type_time startTime, type_time stopTime, type_time costTime){
+    return type_time( (arriveDate.Days() -  (startTime + stopTime + costTime).Days()) * 1440  );
+    //startdate + date(starttime + cur_route.arrive[posStart] + cur_route.stop[posStart]) ==  date(arriveDate)
 }
 
 string to_index(type_time time_, type_trainID id_){

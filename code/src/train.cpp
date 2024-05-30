@@ -125,6 +125,13 @@ ReturnMode Train_System::query_ticket(type_time cur_time, type_stationName sta1,
     vector<Station> trains3 = shared_elements( trains1, trains2 );
     trains1.clear(); trains2.clear();
     //trains3 为可能的车
+
+    //要求：1.出发/到达顺序正确  2.
+    for (int i = 0; i < trains3.size(); i++){
+
+
+    }
+
     //todo
 
     return ReturnMode::Correct;

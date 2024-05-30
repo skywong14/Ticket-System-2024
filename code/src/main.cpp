@@ -25,9 +25,15 @@ bool check_arguments(char ch, int sz){
     }
     return true;
 }
+
+Order order_route_info(){
+
+
+}
+
 int main(){
-//    freopen("Mytest.txt","r",stdin);
-//    freopen("MyAnswer.txt","w",stdout);
+    freopen("Mytest.txt","r",stdin);
+    freopen("MyAnswer.txt","w",stdout);
     User_info cur_user_info, other_user_info, tmp_user_info;
     Train_Info cur_train_info, other_train_info;
     type_time cur_time, other_time;
@@ -41,7 +47,7 @@ int main(){
     bool ret_bool, pending;
     bool the_first_user = user_system.empty();
     ReturnMode ret_mode;
-    int tmp_num;
+    int tmp_num, posStart, posEnd;
 
     bool system_open = true;
     while (system_open){
@@ -228,7 +234,7 @@ int main(){
                 cur_train_info.released = false;
                 assert(arguments['y' - 'a'].size() == 1); //for debug only
 
-                train_system.add_train(cur_train_id, cur_train_info);
+                train_system.add_train(arguments['i' - 'a'], cur_train_info);
 
                 std::cout<<0<<std::endl;
                 break;
@@ -252,6 +258,7 @@ int main(){
                 // -i
                 ret_mode = ReturnMode::Other_Error;
                 cur_train_id = arguments['i' - 'a'];
+
                 if (train_system.exist_trainId(cur_train_info, cur_train_id)){
                     ret_mode = ReturnMode::Invalid_Operation;
                     if (!cur_train_info.released){
@@ -259,7 +266,7 @@ int main(){
                         ret_mode = ReturnMode::Correct;
                     }
                 }
-
+//                output_ReturnMode(ret_mode, com_head.first, cur_train_id.to_string());
                 if (ret_mode == ReturnMode::Correct) std::cout<<0<<std::endl;
                 else std::cout<<-1<<std::endl;
                 break;
@@ -282,6 +289,7 @@ int main(){
                 other_station = arguments['t' - 'a'];
 
                 ret_mode = train_system.query_ticket(cur_time, cur_station, other_station, arguments['p' - 'a']);
+
                 break;
             case Command_Name::query_transfer:
 
@@ -304,11 +312,11 @@ int main(){
                     //用户已登录，列车存在，且已发布
                     cur_route = train_system.read_Train_Route(cur_train_info.routePtr);
 
-                    int posStart = cur_route.search_station(cur_station);
-                    int posEnd = cur_route.search_station(other_station);
+                    posStart = cur_route.search_station(cur_station);
+                    posEnd = cur_route.search_station(other_station);
                     assert(posStart >= 0 && posEnd >= 0); //for debug
 
-                    other_time = setOffDate(cur_time, cur_train_info.startTime, cur_route.arriveTimes[posStart]); //发车日
+                    other_time = setOffDate(cur_time, cur_train_info.startTime, cur_route.stopoverTimes[posStart], cur_route.arriveTimes[posStart]); //发车日
 
                     if (std::stoi(arguments['n' - 'a']) <= cur_train_info.seatNum //不超过最大Seat数
                             && train_system.exist_DayTicket(day_ticket, other_time, cur_train_id)){
@@ -321,17 +329,9 @@ int main(){
 
                         order_info.orderId = order_system.allocate_new_orderId(); //可能会产生空着的
                         order_info.userid = cur_user_info.userid;
-                        order_info.trainId = cur_train_id;
-                        order_info.trainType = cur_train_info.type;
-                        order_info.num = std::stoi(arguments['n' - 'a']);
-                        order_info.startStationPos = posStart;
-                        order_info.endStationPos = posEnd;
-                        order_info.startStation = cur_route.stations[posStart];
-                        order_info.endStation = cur_route.stations[posEnd];
-                        order_info.startTime = type_time(other_time + cur_train_info.startTime + cur_route.arriveTimes[posStart] + cur_route.stopoverTimes[posStart]);
-                        order_info.endTime = type_time(other_time + cur_train_info.startTime + cur_route.arriveTimes[posEnd]);
-                        order_info.date = other_time;
-                        order_info.unit_price = cur_route.prices[posEnd] - cur_route.prices[posStart];
+
+                        order_info.singlePass = get_Single_Pass(cur_time, cur_train_info, cur_route,
+                                                                std::stoi(arguments['n' - 'a']), cur_station, other_station);
 
                         if (tmp_num >= std::stoi(arguments['n' - 'a']) ){
                             //buy ticket and create order
@@ -339,7 +339,7 @@ int main(){
 
                             order_system.create_order(cur_user_info.userid, order_info);
 
-                            std::cout<<order_info.unit_price * order_info.num<<std::endl;
+                            std::cout<<order_info.singlePass.unit_price * order_info.singlePass.num<<std::endl;
                             ret_mode = ReturnMode::Correct;
                         } else {
                             ret_mode = ReturnMode::Wrong_Value;
@@ -376,7 +376,7 @@ int main(){
                 system_open = false;
                 break;
         }
-        output_ReturnMode(ret_mode, com_head.first);
+//        output_ReturnMode(ret_mode, com_head.first);
     }
     return 0;
 }
