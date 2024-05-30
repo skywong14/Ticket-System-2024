@@ -7,17 +7,6 @@
 #include "../tools/MyTools.hpp"
 #include "train.hpp"
 
-struct Single_Pass{
-    int num{}, unit_price{};
-    char trainType{};
-    type_time date; //列车发车的日期
-    type_trainID trainId;
-    type_stationName startStation, endStation;
-    int startStationPos{}, endStationPos{}; //0-based
-    type_time startTime, endTime;
-    string to_string();
-};
-Single_Pass get_Single_Pass(type_time cur_date, Train_Info trainInfo, Train_Route route, int num, type_stationName staStart, type_stationName staEnd);
 
 struct Order{
     int orderId{}; //订单编号

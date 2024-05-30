@@ -41,12 +41,18 @@ void output_ReturnMode(ReturnMode ret, int timestamp, string extra_info){
 }
 
 string empty_time_string(){
-    return string("xx-xx xx:xx");
+    return "xx-xx xx:xx";
 }
 
-type_time setOffDate(type_time arriveDate, type_time startTime, type_time stopTime, type_time costTime){
-    return type_time( (arriveDate.Days() -  (startTime + stopTime + costTime).Days()) * 1440  );
-    //startdate + date(starttime + cur_route.arrive[posStart] + cur_route.stop[posStart]) ==  date(arriveDate)
+type_time setOffDate(type_time leaveDate, type_time costTime){
+//    std::cout<<"Input: "<<leaveDate.to_string()<<','<<costTime.standard<<'-'<<costTime.to_string()<<"---->"<<type_time( (leaveDate.Days() -  costTime.Days()) * 1440  ).to_string()<<std::endl;
+    return type_time( (leaveDate.Days() -  costTime.Days()) * 1440 );
+    //startDate + date(costTime) ==  date(leaveDate)
+}
+
+type_time setOffDate(type_time leaveDate, type_time startTime, type_time stopTime, type_time costTime){
+    return type_time( (leaveDate.Days() -  (startTime + stopTime + costTime).Days()) * 1440  );
+    //startDate + date(startTime + cur_route.arrive[posStart] + cur_route.stop[posStart]) ==  date(leaveDate)
 }
 
 string to_index(type_time time_, type_trainID id_){

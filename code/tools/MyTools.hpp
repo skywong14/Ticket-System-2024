@@ -148,12 +148,13 @@ public:
         if (ret.second < 10) str = str + '0'; str = str + std::to_string(ret.second) + ' ';
         ret = Time();
         if (ret.first < 10) str = str + '0'; str = str + std::to_string(ret.first) + ':';
-        if (ret.second < 10) str = str + '0'; str = str + std::to_string(ret.second) + ' ';
+        if (ret.second < 10) str = str + '0'; str = str + std::to_string(ret.second);
         return str;
     }
 };
 
-type_time setOffDate(type_time arriveDate, type_time startTime, type_time stopTime, type_time costTime);
+type_time setOffDate(type_time leaveDate, type_time costTime);
+type_time setOffDate(type_time leaveDate, type_time startTime, type_time stopTime, type_time costTime);
 
 const type_time MaxTime = type_time(1e6);
 const type_time NegMaxTime = type_time(-1e6);
@@ -233,10 +234,10 @@ vector<T> shared_elements(vector<T> vec1, vector<T> vec2){
     while (it1 != sortedVec1.end() && it2 != sortedVec2.end()){
         if (*it1 == *it2){
             commonElements.push_back(*it1);
-            *it1++; *it2++;
+            it1++; it2++;
         } else if (*it1 < *it2){
-            *it1++;
-        } else *it2++;
+            it1++;
+        } else it2++;
     }
     return commonElements;
 }

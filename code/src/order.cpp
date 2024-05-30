@@ -63,24 +63,8 @@ string Order::to_string(int state) {
 }
 
 string Single_Pass::to_string() {
-    return trainId.to_string() + ' ' + startStation.to_string() + ' ' + startTime.to_string()
-    + " -> " + endStation.to_string() + ' ' + endTime.to_string() + ' ' + std::to_string(unit_price) + ' ' + std::to_string(num);
+    return trainId.to_string() + ' ' + startStation.to_string() + ' ' + (date + setOffTime + startTime).to_string()
+    + " -> " + endStation.to_string() + ' ' + (date + setOffTime + endTime).to_string() + ' ' + std::to_string(unit_price);
 }
 
-Single_Pass get_Single_Pass(type_time cur_date, Train_Info cur_train_info, Train_Route cur_route, int num, type_stationName staStart, type_stationName staEnd){
-    Single_Pass val;
-    val.trainId = cur_train_info.trainId;
-    val.trainType = cur_train_info.type;
-    val.num = num;
-    val.startStationPos =  cur_route.search_station(staStart);
-    val.endStationPos = cur_route.search_station(staEnd);
-    val.startStation = cur_route.stations[val.startStationPos];
-    val.endStation = cur_route.stations[val.endStationPos];
-
-    val.date = setOffDate(cur_date, cur_train_info.startTime, cur_route.stopoverTimes[val.startStationPos], cur_route.arriveTimes[val.startStationPos]); //发车日
-    val.startTime = type_time(val.date + cur_train_info.startTime + cur_route.arriveTimes[val.startStationPos] + cur_route.stopoverTimes[val.startStationPos]);
-    val.endTime = type_time(val.date + cur_train_info.startTime + cur_route.arriveTimes[val.endStationPos]);
-    val.unit_price = cur_route.prices[val.endStationPos] - cur_route.prices[val.startStationPos];
-    return val;
-}
 

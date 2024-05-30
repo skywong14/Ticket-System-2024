@@ -84,6 +84,8 @@ void Train_System::release_train(type_trainID trainId, Train_Info info_) {
 
     for (int i = 0; i < cur_route.num; i++){
         cur_station = cur_route.stations[i];
+        station_info.pos = i;
+        station_info.cur_station = cur_station;
         station_info.BeginDate = info_.BeginDate;
         station_info.EndDate = info_.EndDate;
         station_info.arriveTime = cur_route.arriveTimes[i];
@@ -119,22 +121,51 @@ vector<Station> Train_System::query_related_train(type_stationName stationName) 
     return station_data.search_values(stationName.to_string());
 }
 
-ReturnMode Train_System::query_ticket(type_time cur_time, type_stationName sta1, type_stationName sta2, const string &type_) {
-    vector<Station> trains1 = query_related_train(sta1);
-    vector<Station> trains2 = query_related_train(sta2);
-    vector<Station> trains3 = shared_elements( trains1, trains2 );
-    trains1.clear(); trains2.clear();
-    //trains3 为可能的车
+vector< Single_Pass > Train_System::pass_by_trains(type_time leave_date, type_stationName sta1, type_stationName sta2) {
+    vector<Station> trains1 = mergeSort(query_related_train(sta1));
+    vector<Station> trains2 = mergeSort(query_related_train(sta2));
 
-    //要求：1.出发/到达顺序正确  2.
-    for (int i = 0; i < trains3.size(); i++){
+    Single_Pass singlePass;
+    vector<Single_Pass> ret;
+    //trains1 & trains2 is ordered
 
+    Station station1, station2;
+
+    type_time set_off_date;
+
+    //要求：1.出发/到达顺序正确  2.日期合法
+    auto it1 = trains1.begin(), it2 = trains2.begin();
+    while (it1 != trains1.end() && it2 != trains2.end()){
+        station1 = *it1; station2 = *it2;
+        if (station1 == station2){
+            if (station1.pos < station2.pos){
+
+                set_off_date = setOffDate( leave_date, station1.startTime + station1.arriveTime + station1.stopTime );
+
+                if ( set_off_date >= station1.BeginDate && set_off_date <= station1.EndDate ){
+                    singlePass.date = set_off_date;
+                    singlePass.setOffTime = station1.startTime;
+                    singlePass.trainId = station1.trainId;
+                    singlePass.unit_price = station2.priceSum - station1.priceSum;
+                    singlePass.startTime = station1.arriveTime + station1.stopTime;
+                    singlePass.endTime = station2.arriveTime;
+                    singlePass.startStation = station1.cur_station;
+                    singlePass.endStation = station2.cur_station;
+                    singlePass.startStationPos = station1.pos;
+                    singlePass.endStationPos = station2.pos;
+
+                    ret.push_back(singlePass);
+                }
+            }
+
+            it1++; it2++;
+        } else {
+            if (station1 < station2)it1++;
+            else it2++;
+        }
 
     }
-
-    //todo
-
-    return ReturnMode::Correct;
+    return ret;
 }
 
 ReturnMode Train_System::query_train(type_time date_, type_trainID trainId) {
@@ -211,8 +242,6 @@ Train_System::maximum_seats(Train_Route route_, DayTicket day_ticket_, type_stat
 }
 
 void Train_System::buy_ticket(DayTicket dayTicket, int posStart, int posEnd, int num) {
-    type_time cur_day = dayTicket.date;
-    type_trainID cur_train = dayTicket.trainId;
 
     Seat_Info seatInfo = seat_data.read_T(dayTicket.seatInfo_ptr);
     for (int i = posStart; i < posEnd; i++){
@@ -220,6 +249,21 @@ void Train_System::buy_ticket(DayTicket dayTicket, int posStart, int posEnd, int
         assert(seatInfo.seat_sell[i] <= seatInfo.seat_num);
     }
     seat_data.write_T(dayTicket.seatInfo_ptr, seatInfo);
+}
+
+Seat_Info Train_System::query_seat_info(type_time date, type_trainID trainId) {
+    vector<DayTicket> ret = ticket_data.search_values(to_index(date, trainId));
+    assert(ret.size() == 1);
+    return read_Seat_Info(ret[0].seatInfo_ptr);
+}
+
+int Train_System::maximum_seats(type_time date, type_trainID trainId, int pos1, int pos2) {
+    Seat_Info seatInfo = query_seat_info(date, trainId);
+    int num = 0;
+    for (int i = pos1; i < pos2; i++)
+        num = std::max(num, seatInfo.seat_sell[i]);
+    return seatInfo.seat_num - num;
+    return 0;
 }
 
 
@@ -257,11 +301,30 @@ void Train_Route::write_info(char ch, vector<string> val_) {
 void Train_Route::calc_arrive() {
     arriveTimes[0] = type_time(0);
     for (int i = 1; i < num; i++)
-        arriveTimes[i] = arriveTimes[i-1] + stopoverTimes[i-1] + travelTimes[i];
+        arriveTimes[i] = arriveTimes[i-1] + stopoverTimes[i-1] + travelTimes[i - 1];
 }
 
 int Train_Route::search_station(type_stationName name_) {
     for (int i = 0; i < num; i++)
         if (name_ == stations[i]) return i;
     return -1; //not found
+}
+
+
+Single_Pass get_Single_Pass(type_time cur_date, Train_Info cur_train_info, Train_Route cur_route, int num, type_stationName staStart, type_stationName staEnd){
+    Single_Pass val;
+    val.trainId = cur_train_info.trainId;
+    val.trainType = cur_train_info.type;
+    val.num = num;
+    val.setOffTime = cur_train_info.startTime;
+    val.startStationPos =  cur_route.search_station(staStart);
+    val.endStationPos = cur_route.search_station(staEnd);
+    val.startStation = cur_route.stations[val.startStationPos];
+    val.endStation = cur_route.stations[val.endStationPos];
+
+    val.date = setOffDate(cur_date, cur_train_info.startTime, cur_route.stopoverTimes[val.startStationPos], cur_route.arriveTimes[val.startStationPos]); //发车日
+    val.startTime = type_time(val.date + cur_train_info.startTime + cur_route.arriveTimes[val.startStationPos] + cur_route.stopoverTimes[val.startStationPos]);
+    val.endTime = type_time(val.date + cur_train_info.startTime + cur_route.arriveTimes[val.endStationPos]);
+    val.unit_price = cur_route.prices[val.endStationPos] - cur_route.prices[val.startStationPos];
+    return val;
 }

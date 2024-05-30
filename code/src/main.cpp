@@ -32,14 +32,16 @@ Order order_route_info(){
 }
 
 int main(){
-    freopen("Mytest.txt","r",stdin);
+    freopen("MyTest.txt","r",stdin);
     freopen("MyAnswer.txt","w",stdout);
     User_info cur_user_info, other_user_info, tmp_user_info;
+    Seat_Info cur_seat_info;
     Train_Info cur_train_info, other_train_info;
     type_time cur_time, other_time;
     Train_Route cur_route;
     type_stationName cur_station, other_station;
     vector<Station> stations;
+    vector<Single_Pass> trains;
     DayTicket day_ticket;
     Order order_info;
 
@@ -288,7 +290,14 @@ int main(){
                 cur_station = arguments['s' - 'a'];
                 other_station = arguments['t' - 'a'];
 
-                ret_mode = train_system.query_ticket(cur_time, cur_station, other_station, arguments['p' - 'a']);
+                trains = train_system.pass_by_trains(cur_time, cur_station, other_station);
+
+                std::cout<<trains.size()<<std::endl;
+
+                for (int i = 0; i < trains.size(); i++){
+                    tmp_num = train_system.maximum_seats(trains[i].date, trains[i].trainId, trains[i].startStationPos, trains[i].endStationPos);
+                    std::cout<<trains[i].to_string()<<' '<< tmp_num <<std::endl;
+                }
 
                 break;
             case Command_Name::query_transfer:

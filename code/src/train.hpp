@@ -4,9 +4,23 @@
 #ifndef TICKET_SYSTEM_2024_TRAIN_HPP
 #define TICKET_SYSTEM_2024_TRAIN_HPP
 
+//#include "order.hpp"
 #include "../tools/BPTree.hpp"
 #include "../tools/MyTools.hpp"
 #include "../tools/LinerMemory.h"
+
+struct Single_Pass{
+    int num{}, unit_price{};
+    char trainType{};
+    type_time date; //列车发车的日期
+    type_time setOffTime; //发车时间
+    type_trainID trainId;
+    type_stationName startStation, endStation;
+    int startStationPos{}, endStationPos{}; //0-based
+    type_time startTime, endTime;
+    string to_string();
+};
+
 
 using type_Train_Route_ptr = int;
 struct Train_Route{
@@ -49,6 +63,8 @@ struct Station{
     type_trainID trainId;
     int priceSum{}; //前缀和
     type_time startTime;
+    int pos{}; //第pos_th个站
+    type_stationName cur_station;
     type_time arriveTime, stopTime;//从始发站到当前站点的时间，与停留时间
     type_time BeginDate, EndDate; //售卖日期
     bool operator<(const Station& other) const { return trainId < other.trainId; }
@@ -73,13 +89,18 @@ struct DayTicket{
 };
 
 
+Single_Pass get_Single_Pass(type_time cur_date, Train_Info trainInfo, Train_Route route, int num, type_stationName staStart, type_stationName staEnd);
+
+
+
+
 class Train_System{
 private:
     LinerMemory< Seat_Info, 1 > seat_data;
     LinerMemory< Train_Route, 1 > route_data;
     BPTree< Train_Info > train_data; // key: trainId value: trainInfo
     BPTree< DayTicket > ticket_data; // key: day + '|' + trainId value: DayTicket
-    BPTree< Station > station_data; // key: stationName   value:trainId
+    BPTree< Station > station_data; // key: stationName   value: Station
 public:
     Train_System();
 
@@ -90,6 +111,8 @@ public:
 
     int new_Train_Route(Train_Route val_);
     int new_Seat_Info(Seat_Info val_);
+
+    Seat_Info query_seat_info(type_time date, type_trainID trainId);
 
     bool exist_trainId(Train_Info &info_, type_trainID id_);
 
@@ -107,6 +130,7 @@ public:
 
     ReturnMode query_train(type_time date_, type_trainID trainId);
 
+    int maximum_seats(type_time date, type_trainID trainId, int pos1, int pos2);
     int maximum_seats(Train_Route route_, DayTicket day_ticket_, type_stationName sta1, type_stationName sta2);
 
     void buy_ticket(DayTicket dayTicket, int posStart, int posEnd, int num);
@@ -116,7 +140,7 @@ public:
     //分别查询经过起点站和终点站的车次，得到两个vector，找出两个vector中trainId一致的车次
     //要求：1.先到起点站再到终点站
     // 2.对于每个train类型，向前推算运行时间的天数，判断是否在saleDate中
-    ReturnMode query_ticket(type_time cur_time, type_stationName sta1, type_stationName sta2, const string& type_);
+    vector< Single_Pass > pass_by_trains(type_time cur_time, type_stationName sta1, type_stationName sta2);
 
     //分别查询经过起点站和终点站的车次，得到两个vector
     //枚举两个vector中车次，记为Train1, Train2
