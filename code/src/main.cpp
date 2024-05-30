@@ -30,8 +30,8 @@ bool check_arguments(char ch, int sz){
 }
 
 int main(){
-    freopen("MyTest.txt","r",stdin);
-    freopen("MyAnswer.txt","w",stdout);
+//    freopen("MyTest.txt","r",stdin);
+//    freopen("MyAnswer.txt","w",stdout);
     User_info cur_user_info, other_user_info, tmp_user_info;
     Train_Info cur_train_info, other_train_info;
     type_time cur_time, other_time;
@@ -305,7 +305,7 @@ int main(){
                 break;
             case Command_Name::query_transfer:
 
-
+                std::cout<<0<<std::endl;
 
                 break;
             case Command_Name::buy_ticket:
