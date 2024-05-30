@@ -13,6 +13,9 @@ User_system user_system;
 Train_System train_system;
 Order_System order_system;
 
+CmpSinglePass_Time cmpSinglePass_Time;
+CmpSinglePass_Cost cmpSinglePass_Cost;
+
 bool check_arguments(char ch, int sz){
     if (sz == -1){
         try{
@@ -26,16 +29,10 @@ bool check_arguments(char ch, int sz){
     return true;
 }
 
-Order order_route_info(){
-
-
-}
-
 int main(){
     freopen("MyTest.txt","r",stdin);
     freopen("MyAnswer.txt","w",stdout);
     User_info cur_user_info, other_user_info, tmp_user_info;
-    Seat_Info cur_seat_info;
     Train_Info cur_train_info, other_train_info;
     type_time cur_time, other_time;
     Train_Route cur_route;
@@ -46,7 +43,7 @@ int main(){
     Order order_info;
 
     type_trainID cur_train_id;
-    bool ret_bool, pending;
+    bool pending;
     bool the_first_user = user_system.empty();
     ReturnMode ret_mode;
     int tmp_num, posStart, posEnd;
@@ -292,6 +289,12 @@ int main(){
 
                 trains = train_system.pass_by_trains(cur_time, cur_station, other_station);
 
+                if (arguments['p' - 'a'] == "time"){
+                    trains = sort_Single_Pass(trains, cmpSinglePass_Time);
+                } else {
+                    trains = sort_Single_Pass(trains, cmpSinglePass_Cost);
+                }
+
                 std::cout<<trains.size()<<std::endl;
 
                 for (int i = 0; i < trains.size(); i++){
@@ -375,7 +378,16 @@ int main(){
                 if (ret_mode != ReturnMode::Correct) std::cout<<-1<<std::endl;
                 break;
             case Command_Name::refund_ticket:
+                //-u (-n 1)
+                ret_mode = ReturnMode::Other_Error;
+                if (arguments['n' - 'a'].empty()) arguments['n' - 'a'] = "1";
+                tmp_num = std::stoi(arguments['n' - 'a']);
+                if (user_system.logged_in(cur_user_info, arguments['u'- 'a'])){
+                    ret_mode = order_system.refund_ticket(arguments['u'- 'a'], tmp_num);
+                }
 
+                if (ret_mode == ReturnMode::Correct) std::cout<<0<<std::endl;
+                else std::cout<<-1<<std::endl;
                 break;
             case Command_Name::clean:
 

@@ -171,26 +171,26 @@ vector< Single_Pass > Train_System::pass_by_trains(type_time leave_date, type_st
 ReturnMode Train_System::query_train(type_time date_, type_trainID trainId) {
     Train_Info train_info;
     if (!exist_trainId(train_info, trainId)) return ReturnMode::Invalid_Operation;
-    if (date_ < train_info.startTime || date_ > train_info.EndDate) return ReturnMode::Wrong_Value;
+    if (date_ < train_info.BeginDate || date_ > train_info.EndDate) return ReturnMode::Wrong_Value;
     Train_Route route = read_Train_Route(train_info.routePtr);
-    type_time base_time = train_info.startTime + train_info.BeginDate;
+    type_time base_time = train_info.startTime + date_;
 
     if (!train_info.released){
         //未发布
         std::cout<<trainId<<' '<<train_info.type<<std::endl;
         //起点
         std::cout << route.stations[0] << ' ' << empty_time_string()
-                  << " -> " << base_time.to_string()
+                  << " -> " << base_time.to_string() <<' '
                   << route.prices[0] << ' ' << train_info.seatNum << std::endl;
         //中间
         for (int i = 1; i < route.num - 1; i++){
             std::cout << route.stations[i] << ' ' << (base_time + route.arriveTimes[i]).to_string()
-                      << " -> " << (base_time + route.arriveTimes[i] + route.stopoverTimes[i]).to_string()
+                      << " -> " << (base_time + route.arriveTimes[i] + route.stopoverTimes[i]).to_string() <<' '
                       << route.prices[i] << ' ' << train_info.seatNum << std::endl;
         }
         //终点
         std::cout << route.stations[route.num - 1] << ' ' << (base_time + route.arriveTimes[route.num - 1]).to_string()
-                  << " -> " << empty_time_string()
+                  << " -> " << empty_time_string() <<' '
                   << route.prices[route.num - 1] << ' ' << 'x' << std::endl;
     } else {
         //已发布
@@ -204,17 +204,17 @@ ReturnMode Train_System::query_train(type_time date_, type_trainID trainId) {
 
         //起点
         std::cout << route.stations[0] << ' ' << empty_time_string()
-                  << " -> " << base_time.to_string()
+                  << " -> " << base_time.to_string() <<' '
                   << route.prices[0] << ' ' << train_info.seatNum << std::endl;
         //中间
         for (int i = 1; i < route.num - 1; i++){
             std::cout << route.stations[i] << ' ' << (base_time + route.arriveTimes[i]).to_string()
-                      << " -> " << (base_time + route.arriveTimes[i] + route.stopoverTimes[i]).to_string()
+                      << " -> " << (base_time + route.arriveTimes[i] + route.stopoverTimes[i]).to_string() <<' '
                       << route.prices[i] << ' ' << seat_info.seat_num - seat_info.seat_sell[i - 1] << std::endl;
         }
         //终点
         std::cout << route.stations[route.num - 1] << ' ' << (base_time + route.arriveTimes[route.num - 1]).to_string()
-                  << " -> " << empty_time_string()
+                  << " -> " << empty_time_string() <<' '
                   << route.prices[route.num - 1] << ' ' << 'x' << std::endl;
     }
 
@@ -323,8 +323,9 @@ Single_Pass get_Single_Pass(type_time cur_date, Train_Info cur_train_info, Train
     val.endStation = cur_route.stations[val.endStationPos];
 
     val.date = setOffDate(cur_date, cur_train_info.startTime, cur_route.stopoverTimes[val.startStationPos], cur_route.arriveTimes[val.startStationPos]); //发车日
-    val.startTime = type_time(val.date + cur_train_info.startTime + cur_route.arriveTimes[val.startStationPos] + cur_route.stopoverTimes[val.startStationPos]);
-    val.endTime = type_time(val.date + cur_train_info.startTime + cur_route.arriveTimes[val.endStationPos]);
+    val.startTime = type_time(cur_route.arriveTimes[val.startStationPos] + cur_route.stopoverTimes[val.startStationPos]);
+    val.endTime = type_time(cur_route.arriveTimes[val.endStationPos]);
     val.unit_price = cur_route.prices[val.endStationPos] - cur_route.prices[val.startStationPos];
     return val;
 }
+

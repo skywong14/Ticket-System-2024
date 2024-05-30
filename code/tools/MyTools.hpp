@@ -186,27 +186,17 @@ vector<T> merge(vector<T> left, vector<T> right) {
     vector<T> result;
     auto left_it = left.begin();
     auto right_it = right.begin();
-
     while (left_it != left.end() && right_it != right.end()) {
         if (*left_it <= *right_it) {
-            result.push_back(*left_it);
-            ++left_it;
+            result.push_back(*left_it);  ++left_it;
         } else {
-            result.push_back(*right_it);
-            ++right_it;
+            result.push_back(*right_it); ++right_it;
         }
     }
-    while (left_it != left.end()) {
-        result.push_back(*left_it);
-        ++left_it;
-    }
-    while (right_it != right.end()) {
-        result.push_back(*right_it);
-        ++right_it;
-    }
+    while (left_it != left.end()) { result.push_back(*left_it); ++left_it; }
+    while (right_it != right.end()) { result.push_back(*right_it); ++right_it; }
     return result;
 }
-
 template <typename T>
 vector<T> mergeSort(vector<T> vec) {
     if (vec.size() <= 1) return vec;
@@ -217,28 +207,9 @@ vector<T> mergeSort(vector<T> vec) {
     vector<T> right;
     for (auto it = middle; it != vec.end(); it++)
         right.push_back(*it);
-
     left = mergeSort(left);
     right = mergeSort(right);
-
     return merge(left, right);
 }
 
-template<class T>
-vector<T> shared_elements(vector<T> vec1, vector<T> vec2){
-    vector<T> commonElements;
-    vector<T> sortedVec1 = mergeSort(vec1);
-    vector<T> sortedVec2 = mergeSort(vec2);
-
-    auto it1 = sortedVec1.begin(), it2 = sortedVec2.begin();
-    while (it1 != sortedVec1.end() && it2 != sortedVec2.end()){
-        if (*it1 == *it2){
-            commonElements.push_back(*it1);
-            it1++; it2++;
-        } else if (*it1 < *it2){
-            it1++;
-        } else it2++;
-    }
-    return commonElements;
-}
 #endif //TICKET_SYSTEM_2024_MYTOOLS_HPP

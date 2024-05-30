@@ -23,7 +23,7 @@ struct Order{
 };
 
 struct OrderId{
-    int state{};
+    int state{}; //0:pending 1:success 2:refund
     int orderId{};
     bool operator<(const OrderId& other) const { return orderId < other.orderId; }
     bool operator==(const OrderId& other) const { return orderId == other.orderId; }
@@ -45,6 +45,7 @@ public:
     void create_order(type_userid cur_user, Order order_info);
     void create_waiting_order(type_userid cur_user, Order waitingOrder_info);
     void query_order(type_userid cur_user);
+    ReturnMode refund_ticket(type_userid cur_user, int num);
 };
 
 #endif //TICKET_SYSTEM_2024_ORDER_HPP

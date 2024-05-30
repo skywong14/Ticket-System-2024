@@ -38,7 +38,7 @@ void Order_System::query_order(type_userid cur_user) {
     vector< Order > vec2;
     Order order_info;
     std::cout<<vec.size()<<std::endl;
-    for (int i = 0; i < vec.size(); i++){
+    for (int i = vec.size() - 1; i >= 0; i--){
         if (vec[i].state == 0){
             //候补
             vec2 = waitingOrder_data.search_values(std::to_string(vec[i].orderId));
@@ -53,12 +53,34 @@ void Order_System::query_order(type_userid cur_user) {
     }
 }
 
+ReturnMode Order_System::refund_ticket(type_userid cur_user, int num) {
+    vector< OrderId > vec = userOrder_data.search_values(cur_user.to_string());
+    if (num > vec.size()) return ReturnMode::Out_Of_Range;
+    OrderId orderId = vec[vec.size() - num];
+    OrderId new_orderId;
+    new_orderId.state = 2;
+    new_orderId.orderId = orderId.orderId;
+
+    if (orderId.state == 0){
+        //change the state in userOrder_data
+        //pending
+        //delete from the waitingOrder
+    } else if (orderId.state == 1){
+        //change the state in userOrder_data
+        //success
+        //refund seats
+    } else if (orderId.state == 2){
+        return ReturnMode::Invalid_Operation;
+    }
+    return ReturnMode::Correct;
+}
+
 string Order::to_string(int state) {
     string str;
     if (state == 0) str = "[pending] ";
     else if (state == 1) str = "[success] ";
     else if (state == 2) str = "[refunded] ";
-    str = str + singlePass.to_string();;
+    str = str + singlePass.to_string() + " " + std::to_string(singlePass.num);
     return str;
 }
 

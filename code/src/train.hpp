@@ -9,6 +9,8 @@
 #include "../tools/MyTools.hpp"
 #include "../tools/LinerMemory.h"
 
+
+
 struct Single_Pass{
     int num{}, unit_price{};
     char trainType{};
@@ -92,6 +94,51 @@ struct DayTicket{
 Single_Pass get_Single_Pass(type_time cur_date, Train_Info trainInfo, Train_Route route, int num, type_stationName staStart, type_stationName staEnd);
 
 
+struct CmpSinglePass_Time {
+    bool operator()(const Single_Pass& sp1, const Single_Pass& sp2) const {
+        if ((sp1.endTime - sp1.startTime) != (sp2.endTime - sp2.startTime))
+            return (sp1.endTime - sp1.startTime) < (sp2.endTime - sp2.startTime);
+        return sp1.trainId < sp2.trainId;
+    }
+};
+
+struct CmpSinglePass_Cost {
+    bool operator()(const Single_Pass& sp1, const Single_Pass& sp2) const {
+        if (sp1.unit_price != sp2.unit_price)
+            return sp1.unit_price < sp2.unit_price;
+        return sp1.trainId < sp2.trainId;
+    }
+};
+
+template<typename Compare>
+vector<Single_Pass> merge_Single_Pass(vector<Single_Pass> left, vector<Single_Pass> right, Compare cmp) {
+    vector<Single_Pass> result;
+    auto left_it = left.begin();
+    auto right_it = right.begin();
+    while (left_it != left.end() && right_it != right.end()) {
+        if (cmp(*left_it, *right_it)) {
+            result.push_back(*left_it); ++left_it;
+        } else {
+            result.push_back(*right_it); ++right_it;
+        }
+    }
+    while (left_it != left.end()) { result.push_back(*left_it); ++left_it; }
+    while (right_it != right.end()) { result.push_back(*right_it); ++right_it; }
+    return result;
+}
+template<typename Compare>
+vector<Single_Pass> sort_Single_Pass(vector<Single_Pass> vec, Compare cmp) {
+    if (vec.size() <= 1) return vec;
+    auto middle = vec.begin() + (vec.size() / 2);
+    vector<Single_Pass> left;
+    for (auto it = vec.begin(); it != middle; it++) left.push_back(*it);
+    vector<Single_Pass> right;
+    for (auto it = middle; it != vec.end(); it++) right.push_back(*it);
+    left = sort_Single_Pass(left, cmp);
+    right = sort_Single_Pass(right, cmp);
+    return merge_Single_Pass(left, right, cmp);
+}
+
 
 
 class Train_System{
@@ -150,8 +197,6 @@ public:
     // Train1:途径 a0, a1, a2, a3, ...
     // Train2:途径 ...b3, b2, b1, b0
     std::pair<type_trainID, type_trainID> query_transfer();
-
-
 };
 
 
