@@ -29,7 +29,7 @@ struct User_info{
 };
 
 class User_system{
-    BPTree<User_info> user_data; //数据库
+    BPTree<User_info, 5000, 38, 120> user_data; //数据库
     map<type_userid, User_info> user_online;  //登录用户列表
 public:
     User_system();

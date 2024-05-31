@@ -15,7 +15,7 @@ using std::ofstream;
 using sjtu::vector;
 
 //each internal node with M keys and M+1 sons
-template<class T, int Max_Nodes = 4000, int M = 80, int Buffer_Size = 100>
+template<class T, int Max_Nodes = 4000, int M = 150, int Buffer_Size = 120>
 class BPTree{
 private:
     const long long BASE1 = 313, BASE2 = 317;
@@ -289,6 +289,7 @@ private:
                 basic_info.empty_node_id[i] = 0;
                 break;
             }
+        if (flag == 0) throw std::runtime_error("Error: "+std::to_string(Max_Nodes) + '|' + std::to_string(M));
         assert(flag != 0); //for debug only
         return flag;
     }

@@ -19,6 +19,7 @@ CmpSinglePass_Cost cmpSinglePass_Cost;
 int main(){
 //    freopen("MyTest.txt","r",stdin);
 //    freopen("MyAnswer.txt","w",stdout);
+    std::ios::sync_with_stdio(0);std::cin.tie(0);std::cout.tie(0);
     User_info cur_user_info, other_user_info, tmp_user_info;
     Train_Info cur_train_info, other_train_info;
     type_time cur_time, other_time;
