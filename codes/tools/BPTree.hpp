@@ -15,7 +15,7 @@ using std::ofstream;
 using sjtu::vector;
 
 //each internal node with M keys and M+1 sons
-template<class T, int Max_Nodes = 4000, int M = 200, int Buffer_Size = 100>
+template<class T, int Max_Nodes = 3000, int M = 150, int Buffer_Size = 100>
 class BPTree{
 private:
     const long long BASE1 = 313, BASE2 = 317;
@@ -61,48 +61,48 @@ private:
 
     //-------directly on disk-------
     Basic_Information read_Basic_Information_disk(){
-        file.open(index_filename, std::ios::in | std::ios::out | std::ios::binary);
+//        file.open(index_filename, std::ios::in | std::ios::out | std::ios::binary);
         file.seekg(std::ios::beg);
         Basic_Information info;
         file.read((char*)&info, sizeofBasicInformation);
-        file.close();
+//        file.close();
         return info;
     }
     void write_Basic_Information_disk(Basic_Information info_){
-        file.open(index_filename, std::ios::in | std::ios::out | std::ios::binary);
+//        file.open(index_filename, std::ios::in | std::ios::out | std::ios::binary);
         file.seekp(std::ios::beg);
         file.write(reinterpret_cast<char*>(&info_), sizeofBasicInformation);
-        file.close();
+//        file.close();
     }
     Node read_Node_disk(int pos_){
-        file.open(index_filename, std::ios::in | std::ios::out | std::ios::binary);
+//        file.open(index_filename, std::ios::in | std::ios::out | std::ios::binary);
         file.seekg(sizeofBasicInformation + (pos_ - 1) * sizeofNode, std::ios::beg);
         Node node_;
         file.read((char*)&node_, sizeofNode);
-        file.close();
+//        file.close();
         return node_;
     }
 
     void write_Node_disk(int pos_, Node node_){
-        file.open(index_filename, std::ios::in | std::ios::out | std::ios::binary);
+//        file.open(index_filename, std::ios::in | std::ios::out | std::ios::binary);
         file.seekp(sizeofBasicInformation + (pos_ - 1) * sizeofNode, std::ios::beg);
         file.write(reinterpret_cast<char*>(&node_), sizeofNode);
-        file.close();
+//        file.close();
     }
 
     Node_Value read_Node_Value_disk(int pos_){
-        file_value.open(value_filename, std::ios::in | std::ios::out | std::ios::binary);
+//        file_value.open(value_filename, std::ios::in | std::ios::out | std::ios::binary);
         file_value.seekg((pos_ - 1) * sizeofNodeValue, std::ios::beg);
         Node_Value node_;
         file_value.read((char*)&node_, sizeofNodeValue);
-        file_value.close();
+//        file_value.close();
         return std::move(node_);
     }
     void write_Node_Value_disk(int pos_, Node_Value node_){
-        file_value.open(value_filename, std::ios::in | std::ios::out | std::ios::binary);
+//        file_value.open(value_filename, std::ios::in | std::ios::out | std::ios::binary);
         file_value.seekp((pos_ - 1) * sizeofNodeValue, std::ios::beg);
         file_value.write(reinterpret_cast<char*>(&node_), sizeofNodeValue);
-        file_value.close();
+//        file_value.close();
     }
     //-----------------------
 
@@ -717,7 +717,11 @@ public:
         index_filename = filename + "_index.bpt";
         value_filename = filename + "_value.bpt";
 
-        if (check_file_exists(index_filename) && check_file_exists(value_filename) && (!clear_file)) return 0; //文件已经存在就无需初始化
+        if (check_file_exists(index_filename) && check_file_exists(value_filename) && (!clear_file)) {
+            file.open(index_filename, std::ios::in | std::ios::out | std::ios::binary);
+            file_value.open(value_filename, std::ios::in | std::ios::out | std::ios::binary);
+            return 0; //文件已经存在就无需初始化
+        }
 
         initialise_file();
         file.open(index_filename, std::ios::in | std::ios::out | std::ios::binary);
@@ -727,11 +731,18 @@ public:
         info1.root_node_id = 0; //0 means nullptr
         for (int i = 1; i <= Max_Nodes; i++)
             info1.empty_node_id[i-1] = i;
+
+        file.open(index_filename, std::ios::in | std::ios::out | std::ios::binary);
         write_Basic_Information_disk(info1);
+        file.close();
 
         file_value.open(value_filename, std::ios::in | std::ios::out | std::ios::binary);
         assert(file_value.is_open());
         file_value.close();
+
+        file.open(index_filename, std::ios::in | std::ios::out | std::ios::binary);
+        file_value.open(value_filename, std::ios::in | std::ios::out | std::ios::binary);
+
         return 1;
     }
 
@@ -1047,6 +1058,8 @@ public:
 
     ~BPTree() {
         pop_all_buffer();
+        file.close();
+        file_value.close();
     }
 
 };
