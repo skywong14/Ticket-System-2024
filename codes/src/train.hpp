@@ -8,8 +8,6 @@
 #include "../tools/MyTools.hpp"
 #include "../tools/LinerMemory.h"
 
-
-
 struct Single_Pass{
     int num{}, unit_price{};
     char trainType{};

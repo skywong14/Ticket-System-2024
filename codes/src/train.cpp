@@ -205,12 +205,12 @@ ReturnMode Train_System::query_train(type_time date_, type_trainID trainId) {
         //起点
         std::cout << route.stations[0] << ' ' << empty_time_string()
                   << " -> " << base_time.to_string() <<' '
-                  << route.prices[0] << ' ' << train_info.seatNum << std::endl;
+                  << route.prices[0] << ' ' << train_info.seatNum - seat_info.seat_sell[0]  << std::endl;
         //中间
         for (int i = 1; i < route.num - 1; i++){
             std::cout << route.stations[i] << ' ' << (base_time + route.arriveTimes[i]).to_string()
                       << " -> " << (base_time + route.arriveTimes[i] + route.stopoverTimes[i]).to_string() <<' '
-                      << route.prices[i] << ' ' << seat_info.seat_num - seat_info.seat_sell[i - 1] << std::endl;
+                      << route.prices[i] << ' ' << seat_info.seat_num - seat_info.seat_sell[i] << std::endl;
         }
         //终点
         std::cout << route.stations[route.num - 1] << ' ' << (base_time + route.arriveTimes[route.num - 1]).to_string()
