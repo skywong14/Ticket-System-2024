@@ -15,6 +15,8 @@ Order_System order_system;
 
 CmpSinglePass_Time cmpSinglePass_Time;
 CmpSinglePass_Cost cmpSinglePass_Cost;
+CmpSinglePassPair_Time cmpSinglePassPair_Time;
+CmpSinglePassPair_Cost cmpSinglePassPair_Cost;
 
 int main(){
 //    freopen("","r",stdin);
@@ -27,6 +29,7 @@ int main(){
     type_stationName cur_station, other_station;
     vector<Station> stations;
     vector<Single_Pass> trains;
+//    Single_Pass_Pair train_pairs;
     DayTicket day_ticket;
     Order order_info;
 
@@ -294,9 +297,15 @@ int main(){
 
                 break;
             case Command_Name::query_transfer:
+                // -s -t -d (-p time)
+                if (arguments['p' - 'a'].empty()) arguments['p' - 'a'] = "time";
 
+                cur_time = type_time(arguments['d' - 'a']);
+                cur_station = arguments['s' - 'a'];
+                other_station = arguments['t' - 'a'];
+
+//                train_system.query_transfer(cur_time, cur_station, other_station);
                 std::cout<<0<<std::endl;
-
                 break;
             case Command_Name::buy_ticket:
                 //-u -i -d -n -f -t (-q false)

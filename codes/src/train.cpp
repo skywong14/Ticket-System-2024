@@ -270,8 +270,10 @@ Seat_Info Train_System::query_seat_info(type_time date, type_trainID trainId) {
     return read_Seat_Info(ret[0].seatInfo_ptr);
 }
 
+void Train_System::query_transfer(type_time cur_time, type_stationName sta1, type_stationName sta2) {
 
 
+}
 
 void Train_Route::write_info(char ch, vector<string> val_) {
     int sum;

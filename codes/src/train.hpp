@@ -19,7 +19,7 @@ struct Single_Pass{
     type_time startTime, endTime;
     string to_string();
 };
-
+using Single_Pass_Pair = std::pair<Single_Pass, Single_Pass>;
 
 using type_Train_Route_ptr = int;
 struct Train_Route{
@@ -91,6 +91,7 @@ struct DayTicket{
 Single_Pass get_Single_Pass(type_time cur_date, Train_Info trainInfo, Train_Route route, int num, type_stationName staStart, type_stationName staEnd);
 
 
+//for query_ticket
 struct CmpSinglePass_Time {
     bool operator()(const Single_Pass& sp1, const Single_Pass& sp2) const {
         if ((sp1.endTime - sp1.startTime) != (sp2.endTime - sp2.startTime))
@@ -98,7 +99,6 @@ struct CmpSinglePass_Time {
         return sp1.trainId < sp2.trainId;
     }
 };
-
 struct CmpSinglePass_Cost {
     bool operator()(const Single_Pass& sp1, const Single_Pass& sp2) const {
         if (sp1.unit_price != sp2.unit_price)
@@ -106,7 +106,6 @@ struct CmpSinglePass_Cost {
         return sp1.trainId < sp2.trainId;
     }
 };
-
 template<typename Compare>
 vector<Single_Pass> merge_Single_Pass(vector<Single_Pass> left, vector<Single_Pass> right, Compare cmp) {
     vector<Single_Pass> result;
@@ -136,6 +135,69 @@ vector<Single_Pass> sort_Single_Pass(vector<Single_Pass> vec, Compare cmp) {
     return merge_Single_Pass(left, right, cmp);
 }
 
+//for query_transfer
+struct CmpSinglePassPair_Time {
+    bool operator()(const Single_Pass_Pair& sp1, const Single_Pass_Pair& sp2) const {
+        // 总时间作为第一关键字，总价格作为第二关键字，第一辆车的 Train ID 作为第三关键字，第二辆车 Train ID 作为第四关键字
+        // 计算两个票对的总旅行时间
+        int total_time_sp1 = (sp1.second.endTime - sp1.first.startTime).standard;
+        int total_time_sp2 = (sp2.second.endTime - sp2.first.startTime).standard;
+        if (total_time_sp1 != total_time_sp2)  return total_time_sp1 < total_time_sp2;
+        // 计算两个票对的总价格
+        int total_price_sp1 = sp1.first.unit_price + sp1.second.unit_price;
+        int total_price_sp2 = sp2.first.unit_price + sp2.second.unit_price;
+        if (total_price_sp1 != total_price_sp2) return total_price_sp1 < total_price_sp2;
+        // 比较第一辆列车的ID
+        if (sp1.first.trainId != sp2.first.trainId)  return sp1.first.trainId < sp2.first.trainId;
+        // 比较第二辆列车的ID
+        return sp1.second.trainId < sp2.second.trainId;
+    }
+};
+struct CmpSinglePassPair_Cost {
+    bool operator()(const Single_Pass_Pair& sp1, const Single_Pass_Pair& sp2) const {
+        // 总价格作为第一关键字，总时间作为第二关键字，第一辆车的 Train ID 作为第三关键字，第二辆车 Train ID 作为第四关键字。
+        // 计算两个票对的总价格
+        int total_price_sp1 = sp1.first.unit_price + sp1.second.unit_price;
+        int total_price_sp2 = sp2.first.unit_price + sp2.second.unit_price;
+        if (total_price_sp1 != total_price_sp2) return total_price_sp1 < total_price_sp2;
+        // 计算两个票对的总旅行时间
+        int total_time_sp1 = (sp1.second.endTime - sp1.first.startTime).standard;
+        int total_time_sp2 = (sp2.second.endTime - sp2.first.startTime).standard;
+        if (total_time_sp1 != total_time_sp2)  return total_time_sp1 < total_time_sp2;
+        // 比较第一辆列车的ID
+        if (sp1.first.trainId != sp2.first.trainId)  return sp1.first.trainId < sp2.first.trainId;
+        // 比较第二辆列车的ID
+        return sp1.second.trainId < sp2.second.trainId;
+    }
+};
+template<typename Compare>
+vector<Single_Pass_Pair> merge_Single_Pass_Pair(vector<Single_Pass_Pair> left, vector<Single_Pass_Pair> right, Compare cmp) {
+    vector<Single_Pass_Pair> result;
+    auto left_it = left.begin();
+    auto right_it = right.begin();
+    while (left_it != left.end() && right_it != right.end()) {
+        if (cmp(*left_it, *right_it)) {
+            result.push_back(*left_it); ++left_it;
+        } else {
+            result.push_back(*right_it); ++right_it;
+        }
+    }
+    while (left_it != left.end()) { result.push_back(*left_it); ++left_it; }
+    while (right_it != right.end()) { result.push_back(*right_it); ++right_it; }
+    return result;
+}
+template<typename Compare>
+vector<Single_Pass_Pair> sort_Single_Pass_Pair(vector<Single_Pass_Pair> vec, Compare cmp) {
+    if (vec.size() <= 1) return vec;
+    auto middle = vec.begin() + (vec.size() / 2);
+    vector<Single_Pass_Pair> left;
+    for (auto it = vec.begin(); it != middle; it++) left.push_back(*it);
+    vector<Single_Pass_Pair> right;
+    for (auto it = middle; it != vec.end(); it++) right.push_back(*it);
+    left = sort_Single_Pass(left, cmp);
+    right = sort_Single_Pass(right, cmp);
+    return merge_Single_Pass(left, right, cmp);
+}
 
 
 class Train_System{
@@ -194,7 +256,7 @@ public:
     //3.枚举中转站(a0->?->b0)：
     // Train1:途径 a0, a1, a2, a3, ...
     // Train2:途径 ...b3, b2, b1, b0
-    std::pair<type_trainID, type_trainID> query_transfer();
+    void query_transfer(type_time cur_time, type_stationName sta1, type_stationName sta2);
 };
 
 
