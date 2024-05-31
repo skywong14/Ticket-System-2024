@@ -68,7 +68,6 @@ ReturnMode Order_System::refund_ticket(type_userid cur_user, int num) {
         waitingQueue_data.erase(to_index(cur_order.singlePass.date, cur_order.singlePass.trainId), orderId.orderId);
     } else if (orderId.state == 1){
         //success
-
         type_Seat_Info_ptr seatInfoPtr = train_system.refund_ticket(cur_order.singlePass);
 
         check_waitingQueue(cur_order.singlePass.date, cur_order.singlePass.trainId, seatInfoPtr);
@@ -93,12 +92,12 @@ void Order_System::check_waitingQueue(type_time date, type_trainID trainId, type
 
         cnt = 0;
         for (int j = cur_order.singlePass.startStationPos; j < cur_order.singlePass.endStationPos; j++)
-            cnt = std::max(cnt, seat_info.seat_sell[i]);
+            cnt = std::max(cnt, seat_info.seat_sell[j]);
         cnt = seat_info.seat_num - cnt;
 
         if (cnt >= cur_order.singlePass.num){
             for (int j = cur_order.singlePass.startStationPos; j < cur_order.singlePass.endStationPos; j++)
-                seat_info.seat_sell[i] += cur_order.singlePass.num;
+                seat_info.seat_sell[j] += cur_order.singlePass.num;
             waitingQueue_data.erase(to_index(date, trainId), waitingIds[i]);
 
             cur_orderId.orderId = waitingIds[i]; cur_orderId.state = 0;
@@ -110,18 +109,6 @@ void Order_System::check_waitingQueue(type_time date, type_trainID trainId, type
 
     train_system.update_Seat_Info(seatInfoPtr, seat_info);
 }
-/*
- *
-    vector< Order > vec2;
-    Order order_info;
-    std::cout<<vec.size()<<std::endl;
-    for (int i = vec.size() - 1; i >= 0; i--){
-        vec2 = order_data.search_values(std::to_string(vec[i].orderId));
-        assert( vec2.size() == 1);
-        order_info = vec2[0];
-        std::cout<<order_info.to_string(vec[i].state)<<std::endl;
-    }
- */
 
 string Order::to_string(int state) {
     string str;

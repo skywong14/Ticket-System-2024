@@ -231,8 +231,14 @@ bool Train_System::exist_DayTicket(DayTicket &day_ticket, type_time date, type_t
     return false;
 }
 
-int
-Train_System::maximum_seats(Train_Route route_, DayTicket day_ticket_, type_stationName sta1, type_stationName sta2) {
+int Train_System::maximum_seats(type_time date, type_trainID trainId, int pos1, int pos2) {
+    Seat_Info seatInfo = query_seat_info(date, trainId);
+    int num = 0;
+    for (int i = pos1; i < pos2; i++)
+        num = std::max(num, seatInfo.seat_sell[i]);
+    return seatInfo.seat_num - num;
+}
+int Train_System::maximum_seats(Train_Route route_, DayTicket day_ticket_, type_stationName sta1, type_stationName sta2) {
     int pos1 = route_.search_station(sta1), pos2 = route_.search_station(sta2);
     Seat_Info seatInfo = read_Seat_Info(day_ticket_.seatInfo_ptr);
     int num = 0;
@@ -240,9 +246,10 @@ Train_System::maximum_seats(Train_Route route_, DayTicket day_ticket_, type_stat
         num = std::max(num, seatInfo.seat_sell[i]);
     return seatInfo.seat_num - num;
 }
+//todo long long
 
 void Train_System::buy_ticket(DayTicket dayTicket, int posStart, int posEnd, int num) {
-
+    assert(dayTicket.seatInfo_ptr > 0);
     Seat_Info seatInfo = seat_data.read_T(dayTicket.seatInfo_ptr);
     for (int i = posStart; i < posEnd; i++){
         seatInfo.seat_sell[i] += num;
@@ -263,13 +270,7 @@ Seat_Info Train_System::query_seat_info(type_time date, type_trainID trainId) {
     return read_Seat_Info(ret[0].seatInfo_ptr);
 }
 
-int Train_System::maximum_seats(type_time date, type_trainID trainId, int pos1, int pos2) {
-    Seat_Info seatInfo = query_seat_info(date, trainId);
-    int num = 0;
-    for (int i = pos1; i < pos2; i++)
-        num = std::max(num, seatInfo.seat_sell[i]);
-    return seatInfo.seat_num - num;
-}
+
 
 
 void Train_Route::write_info(char ch, vector<string> val_) {
