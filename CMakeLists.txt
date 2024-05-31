@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 include_directories(codes/My_Stl)
 include_directories(codes/tools)
 
-add_executable(codes
+add_executable(code
         codes/My_Stl/exceptions.hpp
         codes/My_Stl/vector.hpp
         codes/src/main.cpp
