@@ -15,7 +15,7 @@ using std::ofstream;
 using sjtu::vector;
 
 //each internal node with M keys and M+1 sons
-template<class T, int Max_Nodes = 3000, int M = 150, int Buffer_Size = 150>
+template<class T, int Max_Nodes = 4000, int M = 200, int Buffer_Size = 150>
 class BPTree{
 private:
     const long long BASE1 = 313, BASE2 = 317;
