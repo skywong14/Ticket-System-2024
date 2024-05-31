@@ -15,13 +15,26 @@ using std::ofstream;
 using sjtu::vector;
 
 //each internal node with M keys and M+1 sons
-template<class T, int Max_Nodes = 3500, int M = 300, int Buffer_Size = 100>
+template<class T, int Max_Nodes = 4000, int M = 200, int Buffer_Size = 100>
 class BPTree{
 private:
+    const long long BASE1 = 313, BASE2 = 317;
+    const long long MOD1 = 1000000007, MOD2 = 1000000009;
+
+    using type_hash = std::pair<long long, long long>;
+
+    type_hash get_Hash(const string& str1) {
+        long long ha1 = 0, ha2 = 0;
+        for (int i = 0; i < str1.length(); i++) {
+            ha1 = (ha1 * BASE1 + (long long)(str1[i])) % MOD1;
+            ha2 = (ha2 * BASE2 + (long long)(str1[i])) % MOD2;
+        }
+        return {ha1, ha2};
+    }
+
     fstream file, file_value;
     string index_filename, value_filename, filename;
-    const int sizeofint = sizeof(int);
-    const long long BASE = 313, MOD = 1e9+7;
+    const int sizeofInt = sizeof(int);
     const int leaf_limit = (M + 1) / 2, internal_limit = M / 2;
     int sizeofBasicInformation = sizeof(Basic_Information);
     int sizeofNode = sizeof(Node);
@@ -35,7 +48,7 @@ private:
     struct Node{
         int is_leaf = 0, size = 0, id = 0;
         int pre_node = 0, nxt_node = 0;
-        long long index[M + 1]{};
+        type_hash index[M + 1]{};
         int sons[M + 2]{};
         Node() = default;
     };
@@ -271,11 +284,11 @@ private:
     void initialise_file(){
         int tmp = 0;
         file.open(index_filename, std::ios::out | std::ios::binary);
-        file.write(reinterpret_cast<char *>(&tmp), sizeofint);
+        file.write(reinterpret_cast<char *>(&tmp), sizeofInt);
         file.close();
 
         file_value.open(value_filename, std::ios::out | std::ios::binary);
-        file_value.write(reinterpret_cast<char *>(&tmp), sizeofint);
+        file_value.write(reinterpret_cast<char *>(&tmp), sizeofInt);
         file_value.close();
     }
     int allocate_node(){
@@ -302,7 +315,7 @@ private:
         write_Node_Value(id_, val_);
     }
 
-    std::pair<vector<int>, Node> find_Node(long long index_hash, T value_){
+    std::pair<vector<int>, Node> find_Node(type_hash index_hash, T value_){
         //vector end with -1 when the key&values is same
         vector<int> trace = {};
         int same_flag = 0;
@@ -345,7 +358,7 @@ private:
         return std::make_pair(trace, cur_node);
     }
 
-    void insert_node(Node cur_node, long long index_, T val_, int ptr_){
+    void insert_node(Node cur_node, type_hash index_, T val_, int ptr_){
         //insert index_ and val_ inside cur_node
         Node_Value cur_values = read_Node_Value(cur_node.id);
         int pos = cur_node.size;
@@ -386,7 +399,7 @@ private:
         Node_Value parent_value = read_Node_Value(parent_node.id);
         Node_Value cur_value = read_Node_Value(cur_node.id), pre_value = read_Node_Value(pre_node.id);
 
-        long long ind_ = cur_node.index[0]; T val_ = cur_value.values[0];
+        type_hash ind_ = cur_node.index[0]; T val_ = cur_value.values[0];
 
         for (int i = cur_node.size; i >= 1; i--){
             cur_node.index[i] = cur_node.index[i - 1];
@@ -425,7 +438,7 @@ private:
         cur_value.values[cur_node.size] = nxt_value.values[0];
         cur_node.size++;
         nxt_node.size--;
-        long long ind_ = nxt_node.index[0]; T val_ = nxt_value.values[0];
+        type_hash ind_ = nxt_node.index[0]; T val_ = nxt_value.values[0];
         for (int i = 0; i < nxt_node.size; i++){
             nxt_node.index[i] = nxt_node.index[i + 1];
             nxt_node.sons[i] = nxt_node.sons[i + 1];
@@ -699,14 +712,6 @@ public:
         buffer.node_size = buffer.value_size = buffer.info_flag = 0;
     }
 
-    long long get_Hash(const string& str1){
-        long long ha = 0;
-        for (int i = 0; i < str1.length(); i++)
-            ha = (ha * BASE + (long long)(str1[i]) ) % MOD;
-        return ha;
-    }
-
-
     int initialise(string FN = "", int clear_file = 0){
         if (!FN.empty()) filename = FN;
         index_filename = filename + "_index.bpt";
@@ -733,7 +738,7 @@ public:
 
     int insert(const string& str1, T value_){
         //return 0 is key&value is same
-        long long index_hash = get_Hash(str1);
+        type_hash index_hash = get_Hash(str1);
 
         basic_info = read_Basic_Information();
 
@@ -756,7 +761,7 @@ public:
             int trace_cnt = int(trace.size()) - 1;
             //then insert in cur_node and not the head of cur_node is guaranteed
             //we need to insert index_hash&inserted_value to cur_node
-            long long inserted_index = index_hash;
+            type_hash inserted_index = index_hash;
             int inserted_ptr = 0;
             T inserted_value = value_;
 
@@ -865,7 +870,7 @@ public:
     }
 
     vector<T> search_values(const string& str_index){
-        long long index_hash = get_Hash(str_index);
+        type_hash index_hash = get_Hash(str_index);
         vector<T> val;
         basic_info = read_Basic_Information();
         if (basic_info.root_node_id == 0){
@@ -924,7 +929,7 @@ public:
 
     int erase(const string& str1, T value_){
         basic_info = read_Basic_Information();
-        long long index_hash = get_Hash(str1);
+        type_hash index_hash = get_Hash(str1);
         std::pair<vector<int>, Node> ret = find_Node(index_hash, value_);
         vector<int> path = ret.first;
         Node cur_node = ret.second;
@@ -962,7 +967,7 @@ public:
 
         if (pos == 0 && cur_node.pre_node != 0){
             //if delete on head, update the key
-            long long substitution_index = cur_node.index[0];
+            type_hash substitution_index = cur_node.index[0];
             T substitution_val = cur_value.values[0];
             Node tmp_node; Node_Value tmp_value;
             int sub_flag = 0;
