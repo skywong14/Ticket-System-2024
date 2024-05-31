@@ -15,11 +15,8 @@ Order_System order_system;
 
 CmpSinglePass_Time cmpSinglePass_Time;
 CmpSinglePass_Cost cmpSinglePass_Cost;
-CmpSinglePassPair_Time cmpSinglePassPair_Time;
-CmpSinglePassPair_Cost cmpSinglePassPair_Cost;
 
 int main(){
-//    freopen("","r",stdin);
 //    freopen("MyTest.txt","r",stdin);
 //    freopen("MyAnswer.txt","w",stdout);
     User_info cur_user_info, other_user_info, tmp_user_info;
@@ -29,12 +26,11 @@ int main(){
     type_stationName cur_station, other_station;
     vector<Station> stations;
     vector<Single_Pass> trains;
-//    Single_Pass_Pair train_pairs;
     DayTicket day_ticket;
     Order order_info;
 
     type_trainID cur_train_id;
-    bool pending;
+    bool pending, time_first;
     bool the_first_user = user_system.empty();
     ReturnMode ret_mode;
     int tmp_num, posStart, posEnd;
@@ -298,14 +294,16 @@ int main(){
                 break;
             case Command_Name::query_transfer:
                 // -s -t -d (-p time)
+
                 if (arguments['p' - 'a'].empty()) arguments['p' - 'a'] = "time";
+                if (arguments['p' - 'a'] == "time") time_first = true;
+                else time_first = false;
 
                 cur_time = type_time(arguments['d' - 'a']);
                 cur_station = arguments['s' - 'a'];
                 other_station = arguments['t' - 'a'];
 
-//                train_system.query_transfer(cur_time, cur_station, other_station);
-                std::cout<<0<<std::endl;
+                train_system.query_transfer(cur_time, cur_station, other_station, time_first);
                 break;
             case Command_Name::buy_ticket:
                 //-u -i -d -n -f -t (-q false)
@@ -326,18 +324,17 @@ int main(){
                     posStart = cur_route.search_station(cur_station);
                     posEnd = cur_route.search_station(other_station);
 
-                    if (posStart >= 0 && posEnd >= 0){ //站台存在
+                    if (posStart >= 0 && posEnd >= 0 && posStart < posEnd){ //站台存在
                         other_time = setOffDate(cur_time, cur_train_info.startTime, cur_route.stopoverTimes[posStart], cur_route.arriveTimes[posStart]); //发车日
 
                         if (std::stoi(arguments['n' - 'a']) <= cur_train_info.seatNum //不超过最大Seat数
                             && train_system.exist_DayTicket(day_ticket, other_time, cur_train_id)){
                             //列车时间正确，存在对应日子的DayTicket
                             //other_time为始发日期
-                            //抵达时间 other_time + cur_train_info.startTime + cur_route.arriveTimes[posStart]
-                            //离开始发站时间 other_time + cur_train_info.startTime + cur_route.arriveTimes[posStart] + cur_route.stopoverTimes[posStart]
+                            //抵达时间 other_time + cur_train_info.beginTime + cur_route.arriveTimes[posStart]
+                            //离开始发站时间 other_time + cur_train_info.beginTime + cur_route.arriveTimes[posStart] + cur_route.stopoverTimes[posStart]
 
                             tmp_num = train_system.maximum_seats(other_time, cur_train_id, posStart, posEnd);
-//                        tmp_num = train_system.maximum_seats(cur_route, day_ticket, cur_station, other_station);
 
                             order_info.orderId = order_system.allocate_new_orderId(); //可能会产生空着的
                             order_info.userid = cur_user_info.userid;

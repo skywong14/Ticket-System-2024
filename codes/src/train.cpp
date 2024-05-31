@@ -147,7 +147,7 @@ vector< Single_Pass > Train_System::pass_by_trains(type_time leave_date, type_st
                     singlePass.setOffTime = station1.startTime;
                     singlePass.trainId = station1.trainId;
                     singlePass.unit_price = station2.priceSum - station1.priceSum;
-                    singlePass.startTime = station1.arriveTime + station1.stopTime;
+                    singlePass.beginTime = station1.arriveTime + station1.stopTime;
                     singlePass.endTime = station2.arriveTime;
                     singlePass.startStation = station1.cur_station;
                     singlePass.endStation = station2.cur_station;
@@ -166,6 +166,140 @@ vector< Single_Pass > Train_System::pass_by_trains(type_time leave_date, type_st
 
     }
     return ret;
+}
+
+Single_Pass Train_System::the_best_train(type_trainID another_train, type_time earliest_time,
+                                         type_stationName sta1, type_stationName sta2, bool time_first) {
+    //不同于another_train，离开时间大于等于earliest_time，该站为sta1，目的地为sta2
+    //time_first表示time优先或cost优先
+    CmpSinglePass_Time_First cmpSinglePass_TimeFirst;
+    CmpSinglePass_Cost_First cmpSinglePass_CostFirst;
+    vector<Station> trains1 = mergeSort(query_related_train(sta1));
+    vector<Station> trains2 = mergeSort(query_related_train(sta2));
+    Single_Pass best_train;  best_train.trainId = type_trainID("");
+
+    //要求：1.出发/到达顺序正确  2.时间合法
+    bool first_train = true;
+    Single_Pass singlePass;
+    Station station1, station2;
+    type_time set_off_date;
+    auto it1 = trains1.begin(), it2 = trains2.begin();
+    while (it1 != trains1.end() && it2 != trains2.end()){
+        station1 = *it1; station2 = *it2;
+        if (station1 == station2){
+            if (station1.pos < station2.pos && station1.trainId != another_train){
+                //set_off_date + beginTime + arriveTime + stopTime >= earliest_time
+                //set_off_date >= date(earliest_time - beginTime - arriveTime - stopTime)
+                set_off_date = (earliest_time - station1.startTime - station1.arriveTime - station1.stopTime).ceiling_days();
+
+
+                if ( set_off_date <= station1.EndDate ){
+                    if (set_off_date < station1.BeginDate)
+                        singlePass.date = station1.BeginDate;
+                    else
+                        singlePass.date = set_off_date;
+                    singlePass.setOffTime = station1.startTime;
+                    singlePass.trainId = station1.trainId;
+                    singlePass.unit_price = station2.priceSum - station1.priceSum;
+                    singlePass.beginTime = station1.arriveTime + station1.stopTime;
+                    singlePass.endTime = station2.arriveTime;
+                    singlePass.startStation = station1.cur_station;
+                    singlePass.endStation = station2.cur_station;
+                    singlePass.startStationPos = station1.pos;
+                    singlePass.endStationPos = station2.pos;
+
+                    if (first_train){
+                        best_train = singlePass;
+                        first_train = false;
+                    } else {
+                        if (time_first){
+                            if (cmpSinglePass_TimeFirst(singlePass, best_train))
+                                best_train = singlePass;
+                        } else {
+                            if (cmpSinglePass_CostFirst(singlePass, best_train))
+                                best_train = singlePass;
+                        }
+                    }
+                }
+            }
+            it1++; it2++;
+        } else {
+            if (station1 < station2) it1++;
+            else it2++;
+        }
+    }
+    return best_train;
+}
+
+void Train_System::query_transfer(type_time leave_date, type_stationName sta1, type_stationName sta2, bool time_first) {
+    vector<Station> trains1 = query_related_train(sta1);
+    vector<Station> trains2 = query_related_train(sta2);
+    if (trains1.empty() || trains2.empty()) {
+        std::cout<<0<<std::endl;
+        return;
+    }
+    CmpSinglePassPair_Time cmpSinglePassPair_Time;
+    CmpSinglePassPair_Cost cmpSinglePassPair_Cost;
+    Single_Pass_Pair best_pair, ret_pair; bool first_pair = true;
+    Station station1, station2;
+    Train_Info cur_train;
+    Train_Route route;
+    int price0;
+    Single_Pass pass1, pass2;
+    for (int i = 0; i < trains1.size(); i++){
+        station1 = trains1[i];
+        exist_trainId(cur_train, station1.trainId);
+        route = read_Train_Route(cur_train.routePtr);
+
+        price0 = station1.priceSum; //当前站
+        assert(price0 == route.prices[station1.pos]);
+
+        pass1.startStation = sta1;
+        pass1.startStationPos = station1.pos;
+        pass1.trainId = station1.trainId;
+        pass1.date = setOffDate( leave_date, station1.startTime + station1.arriveTime + station1.stopTime);
+        pass1.setOffTime = station1.startTime;
+        pass1.beginTime = station1.arriveTime + station1.stopTime;
+        pass1.trainType = cur_train.type;
+
+        if (pass1.date < station1.BeginDate || pass1.date > station1.EndDate) continue;
+
+        for (int j = station1.pos + 1; j < route.num; j++){
+            pass1.unit_price = route.prices[j] - price0;
+            pass1.endStationPos = j;
+            pass1.endStation = route.stations[j];
+            pass1.endTime = route.arriveTimes[j];
+
+            pass2 = the_best_train( pass1.trainId, pass1.date + pass1.setOffTime + pass1.endTime,
+                                    pass1.endStation, sta2, time_first);
+
+            if (pass2.trainId != type_trainID("")){
+                //exist
+                ret_pair = Single_Pass_Pair(pass1, pass2);
+                if (first_pair){
+                    best_pair = ret_pair;
+                    first_pair = false;
+                } else {
+                    if (time_first){
+                        if (cmpSinglePassPair_Time(ret_pair, best_pair))
+                            best_pair = ret_pair;
+                    } else {
+                        if (cmpSinglePassPair_Cost(ret_pair, best_pair))
+                            best_pair = ret_pair;
+                    }
+                }
+            }
+        }
+    }
+    if (first_pair) std::cout<<0<<std::endl;
+    else {
+        pass1 = best_pair.first;
+        pass2 = best_pair.second;
+        int tmp_num = maximum_seats(pass1.date, pass1.trainId,pass1.startStationPos, pass1.endStationPos);
+        std::cout<<pass1.to_string()<<' '<< tmp_num <<std::endl;
+        tmp_num = maximum_seats(pass2.date, pass2.trainId, pass2.startStationPos, pass2.endStationPos);
+        std::cout<<pass2.to_string()<<' '<< tmp_num <<std::endl;
+    }
 }
 
 ReturnMode Train_System::query_train(type_time date_, type_trainID trainId) {
@@ -270,10 +404,6 @@ Seat_Info Train_System::query_seat_info(type_time date, type_trainID trainId) {
     return read_Seat_Info(ret[0].seatInfo_ptr);
 }
 
-void Train_System::query_transfer(type_time cur_time, type_stationName sta1, type_stationName sta2) {
-
-
-}
 
 void Train_Route::write_info(char ch, vector<string> val_) {
     int sum;
@@ -331,7 +461,7 @@ Single_Pass get_Single_Pass(type_time cur_date, Train_Info cur_train_info, Train
     val.endStation = cur_route.stations[val.endStationPos];
 
     val.date = setOffDate(cur_date, cur_train_info.startTime, cur_route.stopoverTimes[val.startStationPos], cur_route.arriveTimes[val.startStationPos]); //发车日
-    val.startTime = type_time(cur_route.arriveTimes[val.startStationPos] + cur_route.stopoverTimes[val.startStationPos]);
+    val.beginTime = type_time(cur_route.arriveTimes[val.startStationPos] + cur_route.stopoverTimes[val.startStationPos]);
     val.endTime = type_time(cur_route.arriveTimes[val.endStationPos]);
     val.unit_price = cur_route.prices[val.endStationPos] - cur_route.prices[val.startStationPos];
     return val;
