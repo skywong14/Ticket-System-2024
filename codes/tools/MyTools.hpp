@@ -111,6 +111,12 @@ public:
         type_time result(standard - other.standard);
         return result;
     }
+    type_time ceiling_days() const {
+        if (standard % 1440){
+            return type_time((standard / 1440 + 1) * 1440);
+        } else
+            return type_time(standard);
+    }
     int Days() const{ return standard / 1440; }
     int Minutes() const{ return standard % 1440; }
 

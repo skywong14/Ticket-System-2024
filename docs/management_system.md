@@ -56,7 +56,7 @@
 - `seatNum`：该车次的座位数，一个不超过 $10^5$ 的整数。
   
 - `prices`：每两站之间的票价，共 `(stationNum - 1)` 项，第 `i` 项表示第 `i` 站到第 `(i+1)` 站的票价，为一个不超过 $10^5$ 的整数。
-- `startTime`：列车每日的发车时间。
+- `beginTime`：列车每日的发车时间。
   - 时间格式为 `hh:mm` ，例如 `23:51`
 - `travelTimes`：每两站之间行车所用的时间，共 `(stationNum - 1)` 项。
   - 单位：分钟
@@ -191,7 +191,7 @@
   
   - 说明
   
-     添加 `<trainID>` 为 `-i`，`<stationNum>` 为 `-n`，`<seatNum>` 为 `-m`，`<stations>` 为 `-s`，`<prices>` 为 `-p`，`<startTime>` 为 `-x`，`<travelTimes>` 为 `-t`，`<stopoverTimes>` 为 `-o`，`<saleDate>` 为 `-d`，`<type>` 为 `-y` 的车次。
+     添加 `<trainID>` 为 `-i`，`<stationNum>` 为 `-n`，`<seatNum>` 为 `-m`，`<stations>` 为 `-s`，`<prices>` 为 `-p`，`<beginTime>` 为 `-x`，`<travelTimes>` 为 `-t`，`<stopoverTimes>` 为 `-o`，`<saleDate>` 为 `-d`，`<type>` 为 `-y` 的车次。
     由于 `-s`、`-p`、`-t`、`-o` 和 `-d` 由多个值组成，输入时两个值之间以 `|` 隔开（仍是一个不含空格的字符串）。
     
     输入保证火车的座位数大于 0,站的数量不少于 2 不多于 100，且如果火车只有两站 `-o` 后的参数用下划线代替（见举例2）,且火车不会经过同一个站两次。

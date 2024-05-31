@@ -15,13 +15,13 @@ using std::ofstream;
 using sjtu::vector;
 
 //each internal node with M keys and M+1 sons
-template<class T, int Max_Nodes = 3000, int M = 300, int Buffer_Size = 50>
+template<class T, int Max_Nodes = 3500, int M = 300, int Buffer_Size = 100>
 class BPTree{
 private:
     fstream file, file_value;
     string index_filename, value_filename, filename;
     const int sizeofint = sizeof(int);
-    const long long BASE = 197, MOD = 1e9+7;
+    const long long BASE = 313, MOD = 1e9+7;
     const int leaf_limit = (M + 1) / 2, internal_limit = M / 2;
     int sizeofBasicInformation = sizeof(Basic_Information);
     int sizeofNode = sizeof(Node);

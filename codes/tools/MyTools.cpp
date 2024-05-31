@@ -52,7 +52,7 @@ type_time setOffDate(type_time leaveDate, type_time costTime){
 
 type_time setOffDate(type_time leaveDate, type_time startTime, type_time stopTime, type_time costTime){
     return type_time( (leaveDate.Days() -  (startTime + stopTime + costTime).Days()) * 1440  );
-    //startDate + date(startTime + cur_route.arrive[posStart] + cur_route.stop[posStart]) ==  date(leaveDate)
+    //startDate + date(beginTime + cur_route.arrive[posStart] + cur_route.stop[posStart]) ==  date(leaveDate)
 }
 
 string to_index(type_time time_, type_trainID id_){

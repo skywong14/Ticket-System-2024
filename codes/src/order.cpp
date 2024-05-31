@@ -120,7 +120,7 @@ string Order::to_string(int state) {
 }
 
 string Single_Pass::to_string() {
-    return trainId.to_string() + ' ' + startStation.to_string() + ' ' + (date + setOffTime + startTime).to_string()
+    return trainId.to_string() + ' ' + startStation.to_string() + ' ' + (date + setOffTime + beginTime).to_string()
     + " -> " + endStation.to_string() + ' ' + (date + setOffTime + endTime).to_string() + ' ' + std::to_string(unit_price);
 }
 

@@ -16,7 +16,7 @@ struct Single_Pass{
     type_trainID trainId;
     type_stationName startStation, endStation;
     int startStationPos{}, endStationPos{}; //0-based
-    type_time startTime, endTime;
+    type_time beginTime, endTime;
     string to_string();
 };
 using Single_Pass_Pair = std::pair<Single_Pass, Single_Pass>;
@@ -94,8 +94,8 @@ Single_Pass get_Single_Pass(type_time cur_date, Train_Info trainInfo, Train_Rout
 //for query_ticket
 struct CmpSinglePass_Time {
     bool operator()(const Single_Pass& sp1, const Single_Pass& sp2) const {
-        if ((sp1.endTime - sp1.startTime) != (sp2.endTime - sp2.startTime))
-            return (sp1.endTime - sp1.startTime) < (sp2.endTime - sp2.startTime);
+        if ((sp1.endTime - sp1.beginTime) != (sp2.endTime - sp2.beginTime))
+            return (sp1.endTime - sp1.beginTime) < (sp2.endTime - sp2.beginTime);
         return sp1.trainId < sp2.trainId;
     }
 };
@@ -136,12 +136,29 @@ vector<Single_Pass> sort_Single_Pass(vector<Single_Pass> vec, Compare cmp) {
 }
 
 //for query_transfer
+struct CmpSinglePass_Time_First {
+    bool operator()(const Single_Pass& sp1, const Single_Pass& sp2) const {
+        if ((sp1.date + sp1.endTime + sp1.setOffTime) != (sp2.date + sp2.endTime + sp2.setOffTime))
+            return (sp1.date + sp1.endTime + sp1.setOffTime) < (sp2.date + sp2.endTime + sp2.setOffTime);
+
+        return sp1.unit_price < sp2.unit_price;
+    }
+};
+struct CmpSinglePass_Cost_First {
+    bool operator()(const Single_Pass& sp1, const Single_Pass& sp2) const {
+        if (sp1.unit_price != sp2.unit_price)
+            return sp1.unit_price < sp2.unit_price;
+        return (sp1.date + sp1.endTime + sp1.setOffTime) < (sp2.date + sp2.endTime + sp2.setOffTime);
+    }
+};
 struct CmpSinglePassPair_Time {
     bool operator()(const Single_Pass_Pair& sp1, const Single_Pass_Pair& sp2) const {
         // 总时间作为第一关键字，总价格作为第二关键字，第一辆车的 Train ID 作为第三关键字，第二辆车 Train ID 作为第四关键字
         // 计算两个票对的总旅行时间
-        int total_time_sp1 = (sp1.second.endTime - sp1.first.startTime).standard;
-        int total_time_sp2 = (sp2.second.endTime - sp2.first.startTime).standard;
+        int total_time_sp1 = ((sp1.second.date + sp1.second.endTime + sp1.second.setOffTime) -
+                             (sp1.first.date + sp1.first.beginTime + sp1.first.setOffTime)).standard;
+        int total_time_sp2 = ((sp2.second.date + sp2.second.endTime + sp2.second.setOffTime) -
+                              (sp2.first.date + sp2.first.beginTime + sp2.first.setOffTime)).standard;
         if (total_time_sp1 != total_time_sp2)  return total_time_sp1 < total_time_sp2;
         // 计算两个票对的总价格
         int total_price_sp1 = sp1.first.unit_price + sp1.second.unit_price;
@@ -161,8 +178,10 @@ struct CmpSinglePassPair_Cost {
         int total_price_sp2 = sp2.first.unit_price + sp2.second.unit_price;
         if (total_price_sp1 != total_price_sp2) return total_price_sp1 < total_price_sp2;
         // 计算两个票对的总旅行时间
-        int total_time_sp1 = (sp1.second.endTime - sp1.first.startTime).standard;
-        int total_time_sp2 = (sp2.second.endTime - sp2.first.startTime).standard;
+        int total_time_sp1 = ((sp1.second.date + sp1.second.endTime + sp1.second.setOffTime) -
+                              (sp1.first.date + sp1.first.beginTime + sp1.first.setOffTime)).standard;
+        int total_time_sp2 = ((sp2.second.date + sp2.second.endTime + sp2.second.setOffTime) -
+                              (sp2.first.date + sp2.first.beginTime + sp2.first.setOffTime)).standard;
         if (total_time_sp1 != total_time_sp2)  return total_time_sp1 < total_time_sp2;
         // 比较第一辆列车的ID
         if (sp1.first.trainId != sp2.first.trainId)  return sp1.first.trainId < sp2.first.trainId;
@@ -256,7 +275,9 @@ public:
     //3.枚举中转站(a0->?->b0)：
     // Train1:途径 a0, a1, a2, a3, ...
     // Train2:途径 ...b3, b2, b1, b0
-    void query_transfer(type_time cur_time, type_stationName sta1, type_stationName sta2);
+    Single_Pass the_best_train(type_trainID another_train, type_time earliest_time, type_stationName sta1, type_stationName sta2, bool time_first);
+
+    void query_transfer(type_time leave_date, type_stationName sta1, type_stationName sta2, bool time_first);
 };
 
 
