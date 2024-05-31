@@ -75,6 +75,7 @@ struct Station{
 };
 
 //用startDate+TrainId区分，存储Seat相关信息
+//size 30,
 struct DayTicket{
     type_time date;
     type_trainID trainId;
@@ -224,7 +225,7 @@ private:
     LinerMemory< Seat_Info, 1 > seat_data;
     LinerMemory< Train_Route, 1 > route_data;
     BPTree< Train_Info, 3500, 80, 300> train_data; // key: trainId value: trainInfo
-    BPTree< DayTicket > ticket_data; // key: day + '|' + trainId value: DayTicket
+    BPTree< DayTicket, 3500, 100, 300 > ticket_data; // key: day + '|' + trainId value: DayTicket
     BPTree< Station > station_data; // key: stationName   value: Station
 public:
     Train_System();
