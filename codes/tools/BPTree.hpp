@@ -15,7 +15,7 @@ using std::ofstream;
 using sjtu::vector;
 
 //each internal node with M keys and M+1 sons
-template<class T, int Max_Nodes = 3000, int M = 150, int Buffer_Size = 100>
+template<class T, int Max_Nodes = 3000, int M = 150, int Buffer_Size = 150>
 class BPTree{
 private:
     const long long BASE1 = 313, BASE2 = 317;
@@ -61,48 +61,36 @@ private:
 
     //-------directly on disk-------
     Basic_Information read_Basic_Information_disk(){
-//        file.open(index_filename, std::ios::in | std::ios::out | std::ios::binary);
         file.seekg(std::ios::beg);
         Basic_Information info;
         file.read((char*)&info, sizeofBasicInformation);
-//        file.close();
         return info;
     }
     void write_Basic_Information_disk(Basic_Information info_){
-//        file.open(index_filename, std::ios::in | std::ios::out | std::ios::binary);
         file.seekp(std::ios::beg);
         file.write(reinterpret_cast<char*>(&info_), sizeofBasicInformation);
-//        file.close();
     }
     Node read_Node_disk(int pos_){
-//        file.open(index_filename, std::ios::in | std::ios::out | std::ios::binary);
         file.seekg(sizeofBasicInformation + (pos_ - 1) * sizeofNode, std::ios::beg);
         Node node_;
         file.read((char*)&node_, sizeofNode);
-//        file.close();
         return node_;
     }
 
     void write_Node_disk(int pos_, Node node_){
-//        file.open(index_filename, std::ios::in | std::ios::out | std::ios::binary);
         file.seekp(sizeofBasicInformation + (pos_ - 1) * sizeofNode, std::ios::beg);
         file.write(reinterpret_cast<char*>(&node_), sizeofNode);
-//        file.close();
     }
 
     Node_Value read_Node_Value_disk(int pos_){
-//        file_value.open(value_filename, std::ios::in | std::ios::out | std::ios::binary);
         file_value.seekg((pos_ - 1) * sizeofNodeValue, std::ios::beg);
         Node_Value node_;
         file_value.read((char*)&node_, sizeofNodeValue);
-//        file_value.close();
         return std::move(node_);
     }
     void write_Node_Value_disk(int pos_, Node_Value node_){
-//        file_value.open(value_filename, std::ios::in | std::ios::out | std::ios::binary);
         file_value.seekp((pos_ - 1) * sizeofNodeValue, std::ios::beg);
         file_value.write(reinterpret_cast<char*>(&node_), sizeofNodeValue);
-//        file_value.close();
     }
     //-----------------------
 
