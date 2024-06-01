@@ -224,7 +224,7 @@ private:
     LinerMemory< Seat_Info, 1 > seat_data;
     LinerMemory< Train_Route, 1 > route_data;
     BPTree< Train_Info, 3500, 80, 200> train_data; // key: trainId value: trainInfo
-    BPTree< DayTicket, 4500, 128, 200 > ticket_data; // key: day + '|' + trainId value: DayTicket
+    BPTree< DayTicket, 5500, 128, 200 > ticket_data; // key: day + '|' + trainId value: DayTicket
     BPTree< Station, 4000, 80, 300 > station_data; // key: stationName   value: Station
 public:
     Train_System();
