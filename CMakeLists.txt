@@ -22,5 +22,4 @@ add_executable(code
         codes/src/order.cpp
         codes/tools/LinerMemory.h
         codes/src/train.cpp
-        codes/src/timer.hpp
-        codes/tools/BPPTree.hpp)
+        codes/src/timer.hpp)
