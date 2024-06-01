@@ -85,7 +85,6 @@ void Train_System::release_train(type_trainID trainId, Train_Info info_) {
     for (int i = 0; i < cur_route.num; i++){
         cur_station = cur_route.stations[i];
         station_info.pos = i;
-        station_info.cur_station = cur_station;
         station_info.BeginDate = info_.BeginDate;
         station_info.EndDate = info_.EndDate;
         station_info.arriveTime = cur_route.arriveTimes[i];
@@ -122,12 +121,12 @@ vector<Station> Train_System::query_related_train(type_stationName stationName) 
 }
 
 vector< Single_Pass > Train_System::pass_by_trains(type_time leave_date, type_stationName sta1, type_stationName sta2) {
-    vector<Station> trains1 = mergeSort(query_related_train(sta1));
-    vector<Station> trains2 = mergeSort(query_related_train(sta2));
+    vector<Station> trains1 = query_related_train(sta1);
+    vector<Station> trains2 = query_related_train(sta2);
+    //trains1 & trains2 is ordered
 
     Single_Pass singlePass;
     vector<Single_Pass> ret;
-    //trains1 & trains2 is ordered
 
     Station station1, station2;
 
@@ -149,8 +148,8 @@ vector< Single_Pass > Train_System::pass_by_trains(type_time leave_date, type_st
                     singlePass.unit_price = station2.priceSum - station1.priceSum;
                     singlePass.beginTime = station1.arriveTime + station1.stopTime;
                     singlePass.endTime = station2.arriveTime;
-                    singlePass.startStation = station1.cur_station;
-                    singlePass.endStation = station2.cur_station;
+                    singlePass.startStation = sta1;
+                    singlePass.endStation = sta2;
                     singlePass.startStationPos = station1.pos;
                     singlePass.endStationPos = station2.pos;
 
@@ -174,8 +173,8 @@ Single_Pass Train_System::the_best_train(type_trainID another_train, type_time e
     //time_first表示time优先或cost优先
     CmpSinglePass_Time_First cmpSinglePass_TimeFirst;
     CmpSinglePass_Cost_First cmpSinglePass_CostFirst;
-    vector<Station> trains1 = mergeSort(query_related_train(sta1));
-    vector<Station> trains2 = mergeSort(query_related_train(sta2));
+    vector<Station> trains1 = query_related_train(sta1);
+    vector<Station> trains2 = query_related_train(sta2);
     Single_Pass best_train;  best_train.trainId = type_trainID("");
 
     //要求：1.出发/到达顺序正确  2.时间合法
@@ -203,8 +202,8 @@ Single_Pass Train_System::the_best_train(type_trainID another_train, type_time e
                     singlePass.unit_price = station2.priceSum - station1.priceSum;
                     singlePass.beginTime = station1.arriveTime + station1.stopTime;
                     singlePass.endTime = station2.arriveTime;
-                    singlePass.startStation = station1.cur_station;
-                    singlePass.endStation = station2.cur_station;
+                    singlePass.startStation = sta1;
+                    singlePass.endStation = sta2;
                     singlePass.startStationPos = station1.pos;
                     singlePass.endStationPos = station2.pos;
 

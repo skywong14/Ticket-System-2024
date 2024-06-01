@@ -63,7 +63,6 @@ struct Station{
     int priceSum{}; //前缀和
     type_time startTime;
     int pos{}; //第pos_th个站
-    type_stationName cur_station;
     type_time arriveTime, stopTime;//从始发站到当前站点的时间，与停留时间
     type_time BeginDate, EndDate; //售卖日期
     bool operator<(const Station& other) const { return trainId < other.trainId; }
@@ -225,8 +224,8 @@ private:
     LinerMemory< Seat_Info, 1 > seat_data;
     LinerMemory< Train_Route, 1 > route_data;
     BPTree< Train_Info, 3500, 80, 200> train_data; // key: trainId value: trainInfo
-    BPTree< DayTicket, 3500, 128, 200 > ticket_data; // key: day + '|' + trainId value: DayTicket
-    BPTree< Station, 4000, 25, 120 > station_data; // key: stationName   value: Station
+    BPTree< DayTicket, 4500, 128, 200 > ticket_data; // key: day + '|' + trainId value: DayTicket
+    BPTree< Station, 4000, 80, 1000 > station_data; // key: stationName   value: Station
 public:
     Train_System();
 

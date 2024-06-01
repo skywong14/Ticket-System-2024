@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 project(Ticket_System_2024)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 include_directories(codes/My_Stl)
 include_directories(codes/tools)
@@ -21,4 +21,6 @@ add_executable(code
         codes/src/order.hpp
         codes/src/order.cpp
         codes/tools/LinerMemory.h
-        codes/src/train.cpp)
+        codes/src/train.cpp
+        codes/src/timer.hpp
+        codes/tools/BPPTree.hpp)

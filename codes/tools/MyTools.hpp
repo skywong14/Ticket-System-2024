@@ -184,8 +184,7 @@ using ArgPair = std::pair<char, int>;
 //按照“|”分割
 vector<string> split_by_vertical_bar(const string& str);
 
-void output_tokens(const vector<string>& tokens);
-
+/*
 template <typename T>
 vector<T> merge(vector<T> left, vector<T> right) {
     vector<T> result;
@@ -216,5 +215,6 @@ vector<T> mergeSort(vector<T> vec) {
     right = mergeSort(right);
     return merge(left, right);
 }
-
+ //ATTENTION:: 这是龟速排序，但不知道为什么
+*/
 #endif //TICKET_SYSTEM_2024_MYTOOLS_HPP

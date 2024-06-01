@@ -5,6 +5,7 @@
 
 
 Order_System::Order_System() {
+    order_liner_data.initialise("order_liner_data");
     order_data.initialise("order_data");
     userOrder_data.initialise("userOrder_data");
     waitingQueue_data.initialise("waitingQueue_data");

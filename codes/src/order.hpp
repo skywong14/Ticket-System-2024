@@ -35,9 +35,14 @@ struct OrderId{
 
 class Order_System{
 private:
+    LinerMemory< Order > order_liner_data;
     BPTree< Order, 10000, 50, 250 > order_data; //key: oderId   value: Order
     BPTree< OrderId, 3000, 200, 100 > userOrder_data;  //key: userId  value: orderId
     BPTree< int > waitingQueue_data; //key: day + '|' + trainId  value: int(orderId)
+
+//    int new_Order_Info(Order val_);
+//    Order read_Order_Info(int pos);
+//    void update_Order_Info(int pos, Order info);
 public:
     Order_System();
     int allocate_new_orderId();

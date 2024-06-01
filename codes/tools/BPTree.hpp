@@ -887,7 +887,6 @@ public:
                     pos = i;
                     break;
                 }
-//            if (cur_node.sons[pos] <= 0 || cur_node.sons[pos] >= Max_Nodes) throw std::runtime_error("out of range"); //for debug
             cur_node = read_Node(cur_node.sons[pos]);
         }
         //then cur_node is a leaf_node
