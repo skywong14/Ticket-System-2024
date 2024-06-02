@@ -3,7 +3,6 @@
 //
 #include "user.hpp"
 
-//in logged_user
 bool User_system::logged_in(User_info &ret, type_userid userid) {
     if (user_online.find(userid) != user_online.end()){
         ret = user_online[userid];

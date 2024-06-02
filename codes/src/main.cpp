@@ -5,12 +5,6 @@
 #include "train.hpp"
 #include "../tools/MyTools.hpp"
 #include "order.hpp"
-#include "timer.hpp"
-
-//Timer query_ticket_time("query_ticket");
-//Timer query_transfer_time("query_transfer");
-//Timer query_ticket_time1("query_ticket1");
-//Timer query_ticket_time2("query_ticket2");
 
 vector<string> cur_tokens, other_tokens;
 string arguments[26];
@@ -23,8 +17,6 @@ CmpSinglePass_Time cmpSinglePass_Time;
 CmpSinglePass_Cost cmpSinglePass_Cost;
 
 int main(){
-//    freopen("MyTest.txt","r",stdin);
-//    freopen("MyAnswer.txt","w",stdout);
     std::ios::sync_with_stdio(0);
     std::cin.tie(0); std::cout.tie(0);
     User_info cur_user_info, other_user_info, tmp_user_info;
@@ -303,12 +295,9 @@ int main(){
                     tmp_num = train_system.maximum_seats(trains[i].date, trains[i].trainId, trains[i].startStationPos, trains[i].endStationPos);
                     std::cout<<trains[i].to_string()<<' '<< tmp_num <<std::endl;
                 }
-//                query_ticket_time.stop();
-//                query_ticket_time2.stop();
                 break;
             case Command_Name::query_transfer:
                 // -s -t -d (-p time)
-//                query_transfer_time.start();
                 if (arguments['p' - 'a'].empty()) arguments['p' - 'a'] = "time";
                 if (arguments['p' - 'a'] == "time") time_first = true;
                 else time_first = false;
@@ -318,7 +307,6 @@ int main(){
                 other_station = arguments['t' - 'a'];
 
                 train_system.query_transfer(cur_time, cur_station, other_station, time_first);
-//                query_transfer_time.stop();
                 break;
             case Command_Name::buy_ticket:
                 //-u -i -d -n -f -t (-q false)

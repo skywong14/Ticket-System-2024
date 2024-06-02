@@ -268,13 +268,6 @@ public:
     // 2.对于每个train类型，向前推算运行时间的天数，判断是否在saleDate中
     vector< Single_Pass > pass_by_trains(type_time cur_time, type_stationName sta1, type_stationName sta2);
 
-    //分别查询经过起点站和终点站的车次，得到两个vector
-    //枚举两个vector中车次，记为Train1, Train2
-    //1.trainId不能相同，对于Train1，要求对应发车时间在售卖时间内
-    //2.Train1到达中转站后 Train2存在一天有卖票
-    //3.枚举中转站(a0->?->b0)：
-    // Train1:途径 a0, a1, a2, a3, ...
-    // Train2:途径 ...b3, b2, b1, b0
     Single_Pass the_best_train(type_trainID another_train, type_time earliest_time, type_stationName sta1, type_stationName sta2, bool time_first);
 
     void query_transfer(type_time leave_date, type_stationName sta1, type_stationName sta2, bool time_first);
